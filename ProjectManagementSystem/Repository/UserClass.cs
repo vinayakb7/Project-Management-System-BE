@@ -5,80 +5,100 @@ using MailKit.Net.Smtp;
 using System.Security.Cryptography;
 using System.Text;
 using Org.BouncyCastle.Asn1.Cms;
+using Dapper;
+using System.Data;
 
 namespace ProjectManagementSystem.Business
 {
     public class UserClass : IUserClass
     {
-        private readonly IConfiguration _configuration;
-        public UserClass(IConfiguration configuration)
+        private readonly IUnitOfWork unitOfWork;
+        public UserClass(IUnitOfWork unitOfWork)
         {
-            _configuration = configuration;
+            this.unitOfWork = unitOfWork;
         }
 
+        /// <summary>
+        /// Inserts User records into DB.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public UserModel addUser(UserModel user)
         {
             string query = "projectmanagementsystem.addUser(?,?,?,?,?,?)";
-            string sqlDataSource = _configuration.GetConnectionString("dbConnection");
-            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            var sha = SHA256.Create();
+            var asByteArray = Encoding.Default.GetBytes(user.userPassword);
+            var hashedPassword = sha.ComputeHash(asByteArray);
+            var password = Convert.ToBase64String(hashedPassword);
+
+            DynamicParameters dynamicParameters = new();
+            dynamicParameters.Add(name: "name", value: user.userName, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "address", value: user.userAddress, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "contact", value: user.userContact, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "email", value: user.userEmail, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "password", value: password, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "role", value: user.userRole, direction: ParameterDirection.Input);
+
+            using (MySqlConnection mycon = unitOfWork.GetConnection())
             {
-                mycon.Open();
-                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
-                {
-                    var sha = SHA256.Create();
-                    var asByteArray = Encoding.Default.GetBytes(user.userPassword);
-                    var hashedPassword = sha.ComputeHash(asByteArray);
-                    var password = Convert.ToBase64String(hashedPassword);
-                    myCommand.Parameters.AddWithValue("@name", user.userName);
-                        myCommand.Parameters.AddWithValue("@address", user.userAddress);
-                        myCommand.Parameters.AddWithValue("@contact", user.userContact);
-                        myCommand.Parameters.AddWithValue("@email", user.userEmail);
-                        myCommand.Parameters.AddWithValue("@password", password);
-                        myCommand.Parameters.AddWithValue("@role", user.userRole);
-                        myCommand.ExecuteReader();
-                        MimeMessage message = new MimeMessage();
-                        MailboxAddress from = new MailboxAddress("Vinayak Bilagi", "vinayakbilagi7@gmail.com");
-                        MailboxAddress to = new MailboxAddress(user.userName, user.userEmail);
-                        message.From.Add(from);
-                        message.To.Add(to);
-                        message.Subject = "Registered user name and password for Project Approval System";
-                        BodyBuilder bodyBuilder = new BodyBuilder();
-                        bodyBuilder.HtmlBody = "Hello " + user.userName + ",<br /> Your user name is " + user.userEmail + " and password is " + user.userPassword + ".<br />You can use this details to log in to your accont.<br />You can change it later.<br />Thanks & Regard,<br />Admin";
-                        message.Body = bodyBuilder.ToMessageBody();
-                        SmtpClient client = new SmtpClient();
-                        client.Connect("smtp.gmail.com", 587, false);
-                        client.Authenticate("vinayakbilagi7@gmail.com", "dddtiaivtybwqyfj");
-                        client.Send(message);
-                        client.Disconnect(true);
-                        client.Dispose();
-                        mycon.Close();
-                }
-                return user;
+                unitOfWork.Query<UserModel>(query, dynamicParameters, null, commandType: CommandType.Text);
             }
+            //SendEmail(user);
+            return user;
         }
 
+        /// <summary>
+        /// Sends email to given email address.
+        /// </summary>
+        /// <param name="user"></param>
+        private static void SendEmail(UserModel user)
+        {
+            MimeMessage message = new MimeMessage();
+            MailboxAddress from = new MailboxAddress("Vinayak Bilagi", "vinayakbilagi7@gmail.com");
+            MailboxAddress to = new MailboxAddress(user.userName, user.userEmail);
+            message.From.Add(from);
+            message.To.Add(to);
+            message.Subject = "Registered user name and password for Project Approval System";
+            BodyBuilder bodyBuilder = new BodyBuilder();
+            bodyBuilder.HtmlBody = "Hello " + user.userName + ",<br /> Your user name is " + user.userEmail + " and password is " + user.userPassword + ".<br />You can use this details to log in to your accont.<br />You can change it later.<br />Thanks & Regard,<br />Admin";
+            message.Body = bodyBuilder.ToMessageBody();
+            SmtpClient client = new SmtpClient();
+            client.Connect("smtp.gmail.com", 587, false);
+            client.Authenticate("vinayakbilagi7@gmail.com", "dddtiaivtybwqyfj");
+            client.Send(message);
+            client.Disconnect(true);
+            client.Dispose();
+        }
+
+        /// <summary>
+        /// Updates password of user.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public UserModel updatePassword(UserModel user)
         {
             string query = "projectmanagementsystem.updatePassword(?,?)";
-            string sqlDataSource = _configuration.GetConnectionString("dbConnection");
-            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            var sha = SHA256.Create();
+            var asByteArray = Encoding.Default.GetBytes(user.userPassword);
+            var hashedPassword = sha.ComputeHash(asByteArray);
+            var password = Convert.ToBase64String(hashedPassword);
+
+            DynamicParameters dynamicParameters = new();
+            dynamicParameters.Add(name: "id", value: user.userId, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "address", value: password, direction: ParameterDirection.Input);
+
+            using (var mycon = unitOfWork.GetConnection())
             {
-                var sha = SHA256.Create();
-                var asByteArray = Encoding.Default.GetBytes(user.userPassword);
-                var hashedPassword = sha.ComputeHash(asByteArray);
-                var password = Convert.ToBase64String(hashedPassword);
-                mycon.Open();
-                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
-                {
-                    myCommand.Parameters.AddWithValue("@id", user.userId);
-                    myCommand.Parameters.AddWithValue("@pass", password);
-                    myCommand.ExecuteReader();
-                    mycon.Close();
-                }
-                return user;
+                unitOfWork.Query<UserModel>(query, dynamicParameters, null, commandType: CommandType.Text);
             }
+            return user;
         }
 
+        /// <summary>
+        /// sends notification to user.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public string notification(UserModel user)
         {
             MimeMessage message = new MimeMessage();
@@ -98,6 +118,12 @@ namespace ProjectManagementSystem.Business
             client.Dispose();
             return "Email Sent Successfully";
         }
+
+        /// <summary>
+        /// Updates user's password.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public UserModel updatePasswordByEmail(UserModel user)
         {
             var sha = SHA256.Create();
@@ -105,88 +131,65 @@ namespace ProjectManagementSystem.Business
             var hashedPassword = sha.ComputeHash(asByteArray);
             var password = Convert.ToBase64String(hashedPassword);
             string query = "projectmanagementsystem.updatePasswordByEmail(?,?)";
-            string sqlDataSource = _configuration.GetConnectionString("dbConnection");
-            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            DynamicParameters dynamicParameters = new();
+            dynamicParameters.Add(name: "email", value: user.userEmail, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "address", value: password, direction: ParameterDirection.Input);
+
+            using (var mycon = unitOfWork.GetConnection())
             {
-                mycon.Open();
-                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
-                {
-                    myCommand.Parameters.AddWithValue("@email", user.userEmail);
-                    myCommand.Parameters.AddWithValue("@pass", password);
-                    myCommand.ExecuteReader();
-                    mycon.Close();
-                }
-                return user;
+                unitOfWork.Query<UserModel>(query, dynamicParameters, null, commandType: CommandType.Text);
             }
-        }
-        public List<UserModel> getEmail(UserModel user)
-        {
-            List<UserModel> users = new List<UserModel>();
-            string query = "call projectmanagementsystem.getEmail(?);";
-            string sqlDataSource = _configuration.GetConnectionString("dbConnection");
-            MySqlDataReader myReader;
-            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
-            {
-                mycon.Open();
-                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
-                {
-                    myCommand.Parameters.AddWithValue("@id", user.userEmail);
-                    myReader = myCommand.ExecuteReader();
-                    while (myReader.Read())
-                    {
-                        UserModel tempuser = new UserModel();
-                        tempuser.userId = Convert.ToInt32(myReader["userId"]);
-                        tempuser.userName = Convert.ToString(myReader["userName"]);
-                        tempuser.userAddress = Convert.ToString(myReader["userAddress"]);
-                        tempuser.userContact = Convert.ToString(myReader["userContact"]);
-                        tempuser.userEmail = Convert.ToString(myReader["userEmail"]);
-                        tempuser.userPassword = Convert.ToString(myReader["userPassword"]);
-                        tempuser.userRole = Convert.ToString(myReader["userRole"]);
-                        users.Add(tempuser);
-                    }
-                    mycon.Close();
-                    return users;
-                }
-            }
+            return user;
         }
 
-        public List<UserModel> getUserById(UserModel user)
+        /// <summary>
+        /// returns users list depends on email.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public IEnumerable<UserModel> getEmail(UserModel user)
         {
-            List<UserModel> users = new List<UserModel>();
-            string query = "call projectmanagementsystem.getUserById(?);";
-            string sqlDataSource = _configuration.GetConnectionString("dbConnection");
-            MySqlDataReader myReader;
-            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            IEnumerable<UserModel> users;
+            string query = "call projectmanagementsystem.getEmail(?);";
+
+            DynamicParameters dynamicParameters = new();
+            dynamicParameters.Add(name: "id", value: user.userEmail, direction: ParameterDirection.Input);
+
+            using (var mycon = unitOfWork.GetConnection())
             {
-                mycon.Open();
-                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
-                {
-                    myCommand.Parameters.AddWithValue("@id", user.userId);
-                    myReader = myCommand.ExecuteReader();
-                    while (myReader.Read())
-                    {
-                        UserModel tempuser = new UserModel();
-                        tempuser.userId = Convert.ToInt32(myReader["userId"]);
-                        tempuser.userName = Convert.ToString(myReader["userName"]);
-                        tempuser.userAddress = Convert.ToString(myReader["userAddress"]);
-                        tempuser.userContact = Convert.ToString(myReader["userContact"]);
-                        tempuser.userEmail = Convert.ToString(myReader["userEmail"]);
-                        tempuser.userPassword = Convert.ToString(myReader["userPassword"]);
-                        tempuser.userRole = Convert.ToString(myReader["userRole"]);
-                        users.Add(tempuser);
-                    }
-                    mycon.Close();
-                    return users;
-                }
+                users = unitOfWork.Query<UserModel>(query, dynamicParameters, null, commandType: CommandType.Text);
             }
+
+            return users;
+        }
+
+        /// <summary>
+        /// returns users list depends on id.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public IEnumerable<UserModel> getUserById(UserModel user)
+        {
+            IEnumerable<UserModel> users;
+            string query = "call projectmanagementsystem.getUserById(?);";
+
+            DynamicParameters dynamicParameters = new();
+            dynamicParameters.Add(name: "id", value: user.userId, direction: ParameterDirection.Input);
+
+            using (var mycon = unitOfWork.GetConnection())
+            {
+                users = unitOfWork.Query<UserModel>(query, dynamicParameters, null, commandType: CommandType.Text);
+            }
+
+            return users;
         }
         public List<UserModel> getAll()
         {
             List<UserModel> users = new List<UserModel>();
             string query = "getAllUser()";
-            string sqlDataSource = _configuration.GetConnectionString("dbConnection");
+            
             MySqlDataReader myReader;
-            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            using (MySqlConnection mycon = unitOfWork.GetConnection())
             {
                 mycon.Open();
                 using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
@@ -214,9 +217,9 @@ namespace ProjectManagementSystem.Business
         {
             List<UserModel> users = new List<UserModel>();
             string query = "adminDashboard()";
-            string sqlDataSource = _configuration.GetConnectionString("dbConnection");
+            
             MySqlDataReader myReader;
-            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            using (MySqlConnection mycon = unitOfWork.GetConnection())
             {
                 mycon.Open();
                 using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
@@ -243,8 +246,8 @@ namespace ProjectManagementSystem.Business
             Random r = new Random();
             var otp = r.Next(100000, 1000000).ToString();
             string query = "projectmanagementsystem.otp(?,?)";
-            string sqlDataSource = _configuration.GetConnectionString("dbConnection");
-            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            
+            using (MySqlConnection mycon = unitOfWork.GetConnection())
             {
                 mycon.Open();
                 using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
@@ -276,8 +279,8 @@ namespace ProjectManagementSystem.Business
         {
             List<Forgot> forgotL = new List<Forgot>();
             string query = "projectmanagementsystem.checkOTP(?,?)";
-            string sqlDataSource = _configuration.GetConnectionString("dbConnection");
-            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            
+            using (MySqlConnection mycon = unitOfWork.GetConnection())
             {
                 MySqlDataReader myReader;
                 mycon.Open();
@@ -308,9 +311,9 @@ namespace ProjectManagementSystem.Business
             var password = Convert.ToBase64String(hashedPassword);
             List<UserModel> users = new List<UserModel>();   
             string query = "call projectmanagementsystem.getUser(?,?);";
-            string sqlDataSource = _configuration.GetConnectionString("dbConnection");
+            
             MySqlDataReader myReader;
-            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            using (MySqlConnection mycon = unitOfWork.GetConnection())
             {
                 mycon.Open();
                 using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
@@ -338,8 +341,8 @@ namespace ProjectManagementSystem.Business
         public UserModel updateUser(UserModel user)
         {
             string query = "call projectmanagementsystem.updateUser(?,?,?,?,?,?)";
-            string sqlDataSource = _configuration.GetConnectionString("dbConnection");
-            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            
+            using (MySqlConnection mycon = unitOfWork.GetConnection())
             {
 
                 mycon.Open();
@@ -361,9 +364,9 @@ namespace ProjectManagementSystem.Business
         public String deleteUser(int id)
         {
             string query = "call projectmanagementsystem.deleteUser(?);";
-            string sqlDataSource = _configuration.GetConnectionString("dbConnection");
+            
             MySqlDataReader myReader;
-            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            using (MySqlConnection mycon = unitOfWork.GetConnection())
             {
                 mycon.Open();
                 using (MySqlCommand myCommand = new MySqlCommand(query, mycon))

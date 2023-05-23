@@ -10,15 +10,15 @@ namespace ProjectManagementSystem.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IUserClass _userClass;
+        private readonly IUserClass usersClass;
         public UserController(IUserClass userClass)
         {
-            _userClass = userClass;
+            this.usersClass = userClass;
         }
         [HttpPost]
         public IActionResult GetUser(UserModel user)
         {
-                return Ok(_userClass.getUser(user));
+                return Ok(usersClass.getUser(user));
         }
 
         [HttpPost]
@@ -27,7 +27,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(_userClass.addUser(user));
+                return Ok(usersClass.addUser(user));
             }
             catch (Exception e)
             {
@@ -40,7 +40,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(_userClass.gotPassword(forgot));
+                return Ok(usersClass.gotPassword(forgot));
             }
             catch (Exception e)
             {
@@ -53,7 +53,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(_userClass.checkOTP(forgot));
+                return Ok(usersClass.checkOTP(forgot));
             }
             catch (Exception e)
             {
@@ -66,7 +66,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(_userClass.getEmail(user));
+                return Ok(usersClass.getEmail(user));
             }
             catch (Exception e)
             {
@@ -80,7 +80,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(_userClass.getAll());
+                return Ok(usersClass.getAll());
             }
             catch (Exception e)
             {
@@ -92,7 +92,7 @@ namespace ProjectManagementSystem.Controllers
         [Route("updatePassword")]
         public IActionResult updatePassword(UserModel user)
         {
-            return Ok(_userClass.updatePassword(user));
+            return Ok(usersClass.updatePassword(user));
         }
         [HttpPost]
         [Route("getUserById")]
@@ -100,7 +100,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(_userClass.getUserById(user));
+                return Ok(usersClass.getUserById(user));
             }
             catch (Exception e)
             {
@@ -114,7 +114,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(_userClass.updateUser(user));
+                return Ok(usersClass.updateUser(user));
             }
             catch (Exception e)
             {
@@ -127,7 +127,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(_userClass.adminDashboard());
+                return Ok(usersClass.adminDashboard());
             }
             catch (Exception e)
             {
@@ -139,7 +139,7 @@ namespace ProjectManagementSystem.Controllers
         [Route("updatePasswordByEmail")]
         public IActionResult updatePasswordByEmail(UserModel user)
         {
-            return Ok(_userClass.updatePasswordByEmail(user));
+            return Ok(usersClass.updatePasswordByEmail(user));
         }
 
         [HttpPost]
@@ -148,7 +148,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(_userClass.notification(user));
+                return Ok(usersClass.notification(user));
             }
             catch(Exception e)
             {
@@ -160,7 +160,7 @@ namespace ProjectManagementSystem.Controllers
         [Route("deleteUser")]
         public IActionResult deleteUser(int id)
         {
-            return Ok(_userClass.deleteUser(id));
+            return Ok(usersClass.deleteUser(id));
         }
 
     }
