@@ -18,7 +18,7 @@ namespace ProjectManagementSystem.Controllers
         [HttpPost]
         public IActionResult GetUser(UserModel user)
         {
-                return Ok(usersClass.getUser(user));
+                return Ok(usersClass.GetUserForLogIn(user));
         }
 
         [HttpPost]
@@ -40,7 +40,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(usersClass.gotPassword(forgot));
+                return Ok(usersClass.SendOTP(forgot));
             }
             catch (Exception e)
             {
@@ -53,7 +53,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(usersClass.checkOTP(forgot));
+                return Ok(usersClass.CheckOTP(forgot));
             }
             catch (Exception e)
             {

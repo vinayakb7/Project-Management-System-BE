@@ -7,6 +7,8 @@ using System.Text;
 using Org.BouncyCastle.Asn1.Cms;
 using Dapper;
 using System.Data;
+using static Dapper.SqlMapper;
+using static System.Net.WebRequestMethods;
 
 namespace ProjectManagementSystem.Business
 {
@@ -183,127 +185,109 @@ namespace ProjectManagementSystem.Business
 
             return users;
         }
-        public List<UserModel> getAll()
+
+        /// <summary>
+        /// Returns All users from DB.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<UserModel> getAll()
         {
-            List<UserModel> users = new List<UserModel>();
+            IEnumerable<UserModel> users;
             string query = "getAllUser()";
             
-            MySqlDataReader myReader;
             using (MySqlConnection mycon = unitOfWork.GetConnection())
             {
-                mycon.Open();
-                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
-                {
-                    myReader = myCommand.ExecuteReader();
-                    while (myReader.Read())
-                    {
-                        UserModel tempuser = new UserModel();
-                        tempuser.userId = Convert.ToInt32(myReader["userId"]);
-                        tempuser.userName = Convert.ToString(myReader["userName"]);
-                        tempuser.userAddress = Convert.ToString(myReader["userAddress"]);
-                        tempuser.userContact = Convert.ToString(myReader["userContact"]);
-                        tempuser.userEmail = Convert.ToString(myReader["userEmail"]);
-                        tempuser.userPassword = Convert.ToString(myReader["userPassword"]);
-                        tempuser.userRole = Convert.ToString(myReader["role"]);
-                        users.Add(tempuser);
-                    }
-                    mycon.Close();
-                    return users;
-                }
+                users = unitOfWork.Query<UserModel>(query, null, null, commandType: CommandType.Text);
             }
+            return users;
         }
 
-        public List<UserModel> adminDashboard()
+        /// <summary>
+        /// Returns required fields to display on Admins Dashboard.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<UserModel> adminDashboard()
         {
-            List<UserModel> users = new List<UserModel>();
+            IEnumerable<UserModel> users;
             string query = "adminDashboard()";
             
-            MySqlDataReader myReader;
             using (MySqlConnection mycon = unitOfWork.GetConnection())
             {
-                mycon.Open();
-                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
-                {
-                    myReader = myCommand.ExecuteReader();
-                    while (myReader.Read())
-                    {
-                        UserModel tempuser = new UserModel();
-                        tempuser.userName = Convert.ToString(myReader["Total_Users"]);
-                        tempuser.userAddress = Convert.ToString(myReader["Total_Student"]);
-                        tempuser.userContact = Convert.ToString(myReader["Total_HOD"]);
-                        tempuser.userEmail = Convert.ToString(myReader["Total_PIC"]);
-                        tempuser.userPassword = Convert.ToString(myReader["Total_IG"]);
-                        tempuser.userRole = Convert.ToString(myReader["Total_Project"]);
-                        users.Add(tempuser);
-                    }
-                    mycon.Close();
-                    return users;
-                }
+                users = unitOfWork.Query<UserModel>(query, null, null, commandType: CommandType.Text);
             }
+            return users;
         }
-        public Forgot gotPassword(Forgot forgot)
+
+        /// <summary>
+        /// Sends OTP to user via email.
+        /// </summary>
+        /// <param name="forgot"></param>
+        /// <returns></returns>
+        public Forgot SendOTP(Forgot forgot)
         {
             Random r = new Random();
             var otp = r.Next(100000, 1000000).ToString();
             string query = "projectmanagementsystem.otp(?,?)";
-            
+
+            DynamicParameters dynamicParameters = new();
+            dynamicParameters.Add(name: "email", value: forgot.emailId, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "otp", value: otp, direction: ParameterDirection.Input);
+
             using (MySqlConnection mycon = unitOfWork.GetConnection())
             {
-                mycon.Open();
-                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
-                {
-                    myCommand.Parameters.AddWithValue("@email", forgot.emailId);
-                    myCommand.Parameters.AddWithValue("@otp", otp);
-                    myCommand.ExecuteReader();
-                    MimeMessage message = new MimeMessage();
-                    MailboxAddress from = new MailboxAddress("Vinayak Bilagi", "vinayakbilagi7@gmail.com");
-                    MailboxAddress to = new MailboxAddress(forgot.emailId, forgot.emailId);
-                    message.From.Add(from);
-                    message.To.Add(to);
-                    message.Subject = "OTP To Change Password";
-                    BodyBuilder bodyBuilder = new BodyBuilder();
-                    bodyBuilder.HtmlBody = "Your OTP to change Password is "+otp+"<br />Thanks & Regards<br/>Admin";
-                    message.Body = bodyBuilder.ToMessageBody();
-                    SmtpClient client = new SmtpClient();
-                    client.Connect("smtp.gmail.com", 587, false);
-                    client.Authenticate("vinayakbilagi7@gmail.com", "dddtiaivtybwqyfj");
-                    client.Send(message);
-                    client.Disconnect(true);
-                    client.Dispose();
-                    mycon.Close();
-                }
-                return forgot;
+                unitOfWork.Query<UserModel>(query, dynamicParameters, null, commandType: CommandType.Text);
             }
-        }
-        public List<Forgot> checkOTP(Forgot forgot)
-        {
-            List<Forgot> forgotL = new List<Forgot>();
-            string query = "projectmanagementsystem.checkOTP(?,?)";
-            
-            using (MySqlConnection mycon = unitOfWork.GetConnection())
-            {
-                MySqlDataReader myReader;
-                mycon.Open();
-                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
-                {
-                    myCommand.Parameters.AddWithValue("@email", forgot.emailId);
-                    myCommand.Parameters.AddWithValue("@otp", forgot.otp);
-                    myReader = myCommand.ExecuteReader();
-                    while (myReader.Read())
-                    {
-                        Forgot forgotPass = new Forgot();
-                        forgotPass.id = Convert.ToInt32(myReader["optId"]);
-                        forgotPass.emailId = Convert.ToString(myReader["emailId"]);
-                        forgotPass.otp = Convert.ToString(myReader["otp"]);
-                        forgotL.Add(forgotPass);
-                    }
-                    mycon.Close();
-                    return forgotL;
-                }
-            }
+
+            //SendOTPByEmail(forgot, otp);
+            return forgot;
         }
 
-        public List<UserModel> getUser(UserModel user)
+        /// <summary>
+        /// SMTP code to send OTP.
+        /// </summary>
+        /// <param name="forgot"></param>
+        /// <param name="otp"></param>
+        private static void SendOTPByEmail(Forgot forgot, string otp)
+        {
+            MimeMessage message = new MimeMessage();
+            MailboxAddress from = new MailboxAddress("Vinayak Bilagi", "vinayakbilagi7@gmail.com");
+            MailboxAddress to = new MailboxAddress(forgot.emailId, forgot.emailId);
+            message.From.Add(from);
+            message.To.Add(to);
+            message.Subject = "OTP To Change Password";
+            BodyBuilder bodyBuilder = new BodyBuilder();
+            bodyBuilder.HtmlBody = "Your OTP to change Password is " + otp + "<br />Thanks & Regards<br/>Admin";
+            message.Body = bodyBuilder.ToMessageBody();
+            SmtpClient client = new SmtpClient();
+            client.Connect("smtp.gmail.com", 587, false);
+            client.Authenticate("vinayakbilagi7@gmail.com", "dddtiaivtybwqyfj");
+            client.Send(message);
+            client.Disconnect(true);
+            client.Dispose();
+        }
+
+        /// <summary>
+        /// Compares OTP.
+        /// </summary>
+        /// <param name="forgot"></param>
+        /// <returns></returns>
+        public IEnumerable<Forgot> CheckOTP(Forgot forgot)
+        {
+            IEnumerable<Forgot> forgotL;
+            string query = "projectmanagementsystem.checkOTP(?,?)";
+
+            DynamicParameters dynamicParameters = new();
+            dynamicParameters.Add(name: "email", value: forgot.emailId, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "otp", value: forgot.otp, direction: ParameterDirection.Input);
+
+            using (MySqlConnection mycon = unitOfWork.GetConnection())
+            {
+                forgotL = unitOfWork.Query<Forgot>(query, dynamicParameters, null, commandType: CommandType.Text);
+            }
+            return forgotL;
+        }
+
+        public List<UserModel> GetUserForLogIn(UserModel user)
         {
             var sha = SHA256.Create();
             var asByteArray = Encoding.Default.GetBytes(user.userPassword);

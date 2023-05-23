@@ -4,7 +4,7 @@ namespace ProjectManagementSystem.Business
 {
     public interface IUserClass
     {
-        List<UserModel> getUser(UserModel user);
+        List<UserModel> GetUserForLogIn(UserModel user);
 
         /// <summary>
         /// Inserts User records into DB.
@@ -19,7 +19,12 @@ namespace ProjectManagementSystem.Business
         /// <param name="user"></param>
         /// <returns></returns>
         UserModel updatePassword(UserModel user);
-        public List<UserModel> getAll();
+
+        /// <summary>
+        /// Returns All users from DB.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<UserModel> getAll();
 
         /// <summary>
         /// Updates user's password.
@@ -27,7 +32,13 @@ namespace ProjectManagementSystem.Business
         /// <param name="user"></param>
         /// <returns></returns>
         UserModel updatePasswordByEmail(UserModel user);
-        public Forgot gotPassword(Forgot forgot);
+
+        /// <summary>
+        /// Sends OTP to user via email.
+        /// </summary>
+        /// <param name="forgot"></param>
+        /// <returns></returns>
+        public Forgot SendOTP(Forgot forgot);
 
         /// <summary>
         /// returns users list depends on email.
@@ -35,7 +46,13 @@ namespace ProjectManagementSystem.Business
         /// <param name="user"></param>
         /// <returns></returns>
         public IEnumerable<UserModel> getEmail(UserModel user);
-        public List<Forgot> checkOTP(Forgot forgot);
+
+        /// <summary>
+        /// Compares OTP.
+        /// </summary>
+        /// <param name="forgot"></param>
+        /// <returns></returns>
+        public IEnumerable<Forgot> CheckOTP(Forgot forgot);
 
         /// <summary>
         /// returns users list depends on id.
@@ -45,7 +62,12 @@ namespace ProjectManagementSystem.Business
         public IEnumerable<UserModel> getUserById(UserModel user);
         public UserModel updateUser(UserModel user);
         public String deleteUser(int id);
-        public List<UserModel> adminDashboard();
+
+        /// <summary>
+        /// Returns required fields to display on Admins Dashboard.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<UserModel> adminDashboard();
 
         /// <summary>
         /// sends notification to user.
