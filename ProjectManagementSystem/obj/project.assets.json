@@ -1338,23 +1338,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\HPW\\.nuget\\packages\\": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "C:\\Users\\vinayak.bilagi\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "G:\\Downloads\\Project-Management-System-BE\\ProjectManagementSystem\\ProjectManagementSystem.csproj",
+      "projectUniqueName": "C:\\Users\\vinayak.bilagi\\Documents\\IMP\\Project-Management-System-BE\\ProjectManagementSystem\\ProjectManagementSystem.csproj",
       "projectName": "ProjectManagementSystem",
-      "projectPath": "G:\\Downloads\\Project-Management-System-BE\\ProjectManagementSystem\\ProjectManagementSystem.csproj",
-      "packagesPath": "C:\\Users\\HPW\\.nuget\\packages\\",
-      "outputPath": "G:\\Downloads\\Project-Management-System-BE\\ProjectManagementSystem\\obj\\",
+      "projectPath": "C:\\Users\\vinayak.bilagi\\Documents\\IMP\\Project-Management-System-BE\\ProjectManagementSystem\\ProjectManagementSystem.csproj",
+      "packagesPath": "C:\\Users\\vinayak.bilagi\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\vinayak.bilagi\\Documents\\IMP\\Project-Management-System-BE\\ProjectManagementSystem\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-      ],
       "configFilePaths": [
-        "C:\\Users\\HPW\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\vinayak.bilagi\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -1416,7 +1412,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.402\\RuntimeIdentifierGraph.json"
       }
     }
   }

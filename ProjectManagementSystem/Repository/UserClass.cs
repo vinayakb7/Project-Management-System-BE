@@ -11,6 +11,14 @@ namespace ProjectManagementSystem.Business
 {
     public class UserClass : IUserClass
     {
+        #region Constant Variables
+        private static readonly string SUBJECT_FOR_REGISTERED_USER = "Registered user name and password for Project Approval System";
+        private static readonly string SUBJECT_FOR_NOTIFICATION = "Notification from Admin of Project Approval System";
+        private static readonly string EMAIL_SENT = "Email Sent Successfully!";
+        #endregion
+
+        private static readonly string ADD_USER_QUERY = "projectmanagementsystem.addUser(?,?,?,?,?,?)";
+
         private readonly IUnitOfWork unitOfWork;
         public UserClass(IUnitOfWork unitOfWork)
         {
@@ -24,7 +32,7 @@ namespace ProjectManagementSystem.Business
         /// <returns></returns>
         public UserModel AddUser(UserModel user)
         {
-            string query = "projectmanagementsystem.addUser(?,?,?,?,?,?)";
+            string query = ADD_USER_QUERY;
 
             string password = GetHashedPassword(user.userPassword);
 
@@ -38,7 +46,7 @@ namespace ProjectManagementSystem.Business
 
             unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
 
-            string subject = "Registered user name and password for Project Approval System";
+            string subject = SUBJECT_FOR_REGISTERED_USER;
             string body = "Hello " + user.userName + ",<br /> Your user name is " + user.userEmail + " and password is " + user.userPassword + ".<br />You can use this details to log in to your accont.<br />You can change it later.<br />Thanks & Regard,<br />Admin";
 
             EmailTemplate(user.userEmail, subject, body);
@@ -73,12 +81,12 @@ namespace ProjectManagementSystem.Business
         /// <returns></returns>
         public string SendNotification(UserModel user)
         {
-            string subject = "Notification from Admin of Project Approval System";
+            string subject = SUBJECT_FOR_NOTIFICATION;
             string body = user.userAddress;
 
             EmailTemplate(user.userEmail, subject, body);
 
-            return "Email Send SuccessFully!";
+            return EMAIL_SENT;
         }
 
         /// <summary>
