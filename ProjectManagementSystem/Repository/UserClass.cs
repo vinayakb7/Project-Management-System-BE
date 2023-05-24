@@ -4,11 +4,8 @@ using MimeKit;
 using MailKit.Net.Smtp;
 using System.Security.Cryptography;
 using System.Text;
-using Org.BouncyCastle.Asn1.Cms;
 using Dapper;
 using System.Data;
-using static Dapper.SqlMapper;
-using static System.Net.WebRequestMethods;
 
 namespace ProjectManagementSystem.Business
 {
@@ -25,13 +22,11 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public UserModel addUser(UserModel user)
+        public UserModel AddUser(UserModel user)
         {
             string query = "projectmanagementsystem.addUser(?,?,?,?,?,?)";
-            var sha = SHA256.Create();
-            var asByteArray = Encoding.Default.GetBytes(user.userPassword);
-            var hashedPassword = sha.ComputeHash(asByteArray);
-            var password = Convert.ToBase64String(hashedPassword);
+
+            string password = GetHashedPassword(user.userPassword);
 
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "name", value: user.userName, direction: ParameterDirection.Input);
@@ -41,35 +36,14 @@ namespace ProjectManagementSystem.Business
             dynamicParameters.Add(name: "password", value: password, direction: ParameterDirection.Input);
             dynamicParameters.Add(name: "role", value: user.userRole, direction: ParameterDirection.Input);
 
-            using (MySqlConnection mycon = unitOfWork.GetConnection())
-            {
-                unitOfWork.Query<UserModel>(query, dynamicParameters, null, commandType: CommandType.Text);
-            }
-            //SendEmail(user);
-            return user;
-        }
+            unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
 
-        /// <summary>
-        /// Sends email to given email address.
-        /// </summary>
-        /// <param name="user"></param>
-        private static void SendEmail(UserModel user)
-        {
-            MimeMessage message = new MimeMessage();
-            MailboxAddress from = new MailboxAddress("Vinayak Bilagi", "vinayakbilagi7@gmail.com");
-            MailboxAddress to = new MailboxAddress(user.userName, user.userEmail);
-            message.From.Add(from);
-            message.To.Add(to);
-            message.Subject = "Registered user name and password for Project Approval System";
-            BodyBuilder bodyBuilder = new BodyBuilder();
-            bodyBuilder.HtmlBody = "Hello " + user.userName + ",<br /> Your user name is " + user.userEmail + " and password is " + user.userPassword + ".<br />You can use this details to log in to your accont.<br />You can change it later.<br />Thanks & Regard,<br />Admin";
-            message.Body = bodyBuilder.ToMessageBody();
-            SmtpClient client = new SmtpClient();
-            client.Connect("smtp.gmail.com", 587, false);
-            client.Authenticate("vinayakbilagi7@gmail.com", "dddtiaivtybwqyfj");
-            client.Send(message);
-            client.Disconnect(true);
-            client.Dispose();
+            string subject = "Registered user name and password for Project Approval System";
+            string body = "Hello " + user.userName + ",<br /> Your user name is " + user.userEmail + " and password is " + user.userPassword + ".<br />You can use this details to log in to your accont.<br />You can change it later.<br />Thanks & Regard,<br />Admin";
+
+            EmailTemplate(user.userEmail, subject, body);
+
+            return user;
         }
 
         /// <summary>
@@ -77,22 +51,18 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public UserModel updatePassword(UserModel user)
+        public UserModel UpdatePassword(UserModel user)
         {
             string query = "projectmanagementsystem.updatePassword(?,?)";
-            var sha = SHA256.Create();
-            var asByteArray = Encoding.Default.GetBytes(user.userPassword);
-            var hashedPassword = sha.ComputeHash(asByteArray);
-            var password = Convert.ToBase64String(hashedPassword);
+
+            string password = GetHashedPassword(user.userPassword);
 
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "id", value: user.userId, direction: ParameterDirection.Input);
             dynamicParameters.Add(name: "address", value: password, direction: ParameterDirection.Input);
 
-            using (var mycon = unitOfWork.GetConnection())
-            {
-                unitOfWork.Query<UserModel>(query, dynamicParameters, null, commandType: CommandType.Text);
-            }
+            unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+
             return user;
         }
 
@@ -101,24 +71,14 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public string notification(UserModel user)
+        public string SendNotification(UserModel user)
         {
-            MimeMessage message = new MimeMessage();
-            MailboxAddress from = new MailboxAddress("Vinayak Bilagi", "vinayakbilagi7@gmail.com");
-            MailboxAddress to = new MailboxAddress(user.userEmail, user.userEmail);
-            message.From.Add(from);
-            message.To.Add(to);
-            message.Subject = "Notification from Admin of Project Approval System";
-            BodyBuilder bodyBuilder = new BodyBuilder();
-            bodyBuilder.HtmlBody = user.userAddress;
-            message.Body = bodyBuilder.ToMessageBody();
-            SmtpClient client = new SmtpClient();
-            client.Connect("smtp.gmail.com", 587, false);
-            client.Authenticate("vinayakbilagi7@gmail.com", "dddtiaivtybwqyfj");
-            client.Send(message);
-            client.Disconnect(true);
-            client.Dispose();
-            return "Email Sent Successfully";
+            string subject = "Notification from Admin of Project Approval System";
+            string body = user.userAddress;
+
+            EmailTemplate(user.userEmail, subject, body);
+
+            return "Email Send SuccessFully!";
         }
 
         /// <summary>
@@ -126,21 +86,18 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public UserModel updatePasswordByEmail(UserModel user)
+        public UserModel UpdatePasswordByEmail(UserModel user)
         {
-            var sha = SHA256.Create();
-            var asByteArray = Encoding.Default.GetBytes(user.userPassword);
-            var hashedPassword = sha.ComputeHash(asByteArray);
-            var password = Convert.ToBase64String(hashedPassword);
+            string password = GetHashedPassword(user.userPassword);
+
             string query = "projectmanagementsystem.updatePasswordByEmail(?,?)";
+
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "email", value: user.userEmail, direction: ParameterDirection.Input);
             dynamicParameters.Add(name: "address", value: password, direction: ParameterDirection.Input);
 
-            using (var mycon = unitOfWork.GetConnection())
-            {
-                unitOfWork.Query<UserModel>(query, dynamicParameters, null, commandType: CommandType.Text);
-            }
+            unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+
             return user;
         }
 
@@ -149,7 +106,7 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public IEnumerable<UserModel> getEmail(UserModel user)
+        public IEnumerable<UserModel> GetEmail(UserModel user)
         {
             IEnumerable<UserModel> users;
             string query = "call projectmanagementsystem.getEmail(?);";
@@ -157,10 +114,7 @@ namespace ProjectManagementSystem.Business
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "id", value: user.userEmail, direction: ParameterDirection.Input);
 
-            using (var mycon = unitOfWork.GetConnection())
-            {
-                users = unitOfWork.Query<UserModel>(query, dynamicParameters, null, commandType: CommandType.Text);
-            }
+            users = unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
 
             return users;
         }
@@ -170,7 +124,7 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public IEnumerable<UserModel> getUserById(UserModel user)
+        public IEnumerable<UserModel> GetUserById(UserModel user)
         {
             IEnumerable<UserModel> users;
             string query = "call projectmanagementsystem.getUserById(?);";
@@ -178,10 +132,7 @@ namespace ProjectManagementSystem.Business
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "id", value: user.userId, direction: ParameterDirection.Input);
 
-            using (var mycon = unitOfWork.GetConnection())
-            {
-                users = unitOfWork.Query<UserModel>(query, dynamicParameters, null, commandType: CommandType.Text);
-            }
+            users = unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
 
             return users;
         }
@@ -190,15 +141,13 @@ namespace ProjectManagementSystem.Business
         /// Returns All users from DB.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<UserModel> getAll()
+        public IEnumerable<UserModel> GetAll()
         {
             IEnumerable<UserModel> users;
             string query = "getAllUser()";
-            
-            using (MySqlConnection mycon = unitOfWork.GetConnection())
-            {
-                users = unitOfWork.Query<UserModel>(query, null, null, commandType: CommandType.Text);
-            }
+
+            users = unitOfWork.ExecuteQuery<UserModel>(query);
+
             return users;
         }
 
@@ -206,15 +155,13 @@ namespace ProjectManagementSystem.Business
         /// Returns required fields to display on Admins Dashboard.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<UserModel> adminDashboard()
+        public IEnumerable<UserModel> AdminDashboard()
         {
             IEnumerable<UserModel> users;
             string query = "adminDashboard()";
-            
-            using (MySqlConnection mycon = unitOfWork.GetConnection())
-            {
-                users = unitOfWork.Query<UserModel>(query, null, null, commandType: CommandType.Text);
-            }
+
+            users = unitOfWork.ExecuteQuery<UserModel>(query);
+
             return users;
         }
 
@@ -233,37 +180,14 @@ namespace ProjectManagementSystem.Business
             dynamicParameters.Add(name: "email", value: forgot.emailId, direction: ParameterDirection.Input);
             dynamicParameters.Add(name: "otp", value: otp, direction: ParameterDirection.Input);
 
-            using (MySqlConnection mycon = unitOfWork.GetConnection())
-            {
-                unitOfWork.Query<UserModel>(query, dynamicParameters, null, commandType: CommandType.Text);
-            }
+            unitOfWork.ExecuteQuery<Forgot>(query, dynamicParameters);
 
-            //SendOTPByEmail(forgot, otp);
+            string subject = "OTP To Change Password";
+            string body = "Your OTP to change Password is " + otp + "<br />Thanks & Regards<br/>Admin";
+
+            EmailTemplate(forgot.emailId, subject, body);
+
             return forgot;
-        }
-
-        /// <summary>
-        /// SMTP code to send OTP.
-        /// </summary>
-        /// <param name="forgot"></param>
-        /// <param name="otp"></param>
-        private static void SendOTPByEmail(Forgot forgot, string otp)
-        {
-            MimeMessage message = new MimeMessage();
-            MailboxAddress from = new MailboxAddress("Vinayak Bilagi", "vinayakbilagi7@gmail.com");
-            MailboxAddress to = new MailboxAddress(forgot.emailId, forgot.emailId);
-            message.From.Add(from);
-            message.To.Add(to);
-            message.Subject = "OTP To Change Password";
-            BodyBuilder bodyBuilder = new BodyBuilder();
-            bodyBuilder.HtmlBody = "Your OTP to change Password is " + otp + "<br />Thanks & Regards<br/>Admin";
-            message.Body = bodyBuilder.ToMessageBody();
-            SmtpClient client = new SmtpClient();
-            client.Connect("smtp.gmail.com", 587, false);
-            client.Authenticate("vinayakbilagi7@gmail.com", "dddtiaivtybwqyfj");
-            client.Send(message);
-            client.Disconnect(true);
-            client.Dispose();
         }
 
         /// <summary>
@@ -280,87 +204,104 @@ namespace ProjectManagementSystem.Business
             dynamicParameters.Add(name: "email", value: forgot.emailId, direction: ParameterDirection.Input);
             dynamicParameters.Add(name: "otp", value: forgot.otp, direction: ParameterDirection.Input);
 
-            using (MySqlConnection mycon = unitOfWork.GetConnection())
-            {
-                forgotL = unitOfWork.Query<Forgot>(query, dynamicParameters, null, commandType: CommandType.Text);
-            }
+            forgotL = unitOfWork.ExecuteQuery<Forgot>(query, dynamicParameters);
+
             return forgotL;
         }
 
-        public List<UserModel> GetUserForLogIn(UserModel user)
+        /// <summary>
+        /// Get User Model for log in.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public IEnumerable<UserModel> GetUserForLogIn(UserModel user)
         {
-            var sha = SHA256.Create();
-            var asByteArray = Encoding.Default.GetBytes(user.userPassword);
-            var hashedPassword = sha.ComputeHash(asByteArray);
-            var password = Convert.ToBase64String(hashedPassword);
-            List<UserModel> users = new List<UserModel>();   
+            IEnumerable<UserModel> users;
+
+            string password = GetHashedPassword(user.userPassword);
+
             string query = "call projectmanagementsystem.getUser(?,?);";
-            
-            MySqlDataReader myReader;
-            using (MySqlConnection mycon = unitOfWork.GetConnection())
-            {
-                mycon.Open();
-                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
-                {
-                    myCommand.Parameters.AddWithValue("@id", user.userEmail);
-                    myCommand.Parameters.AddWithValue("@nm", password);
-                    myReader = myCommand.ExecuteReader();
-                    while (myReader.Read())
-                    {
-                        UserModel tempuser = new UserModel();
-                        tempuser.userId = Convert.ToInt32(myReader["userId"]);
-                        tempuser.userName = Convert.ToString(myReader["userName"]);
-                        tempuser.userAddress = Convert.ToString(myReader["userAddress"]);
-                        tempuser.userContact = Convert.ToString(myReader["userContact"]);
-                        tempuser.userEmail = Convert.ToString(myReader["userEmail"]);
-                        tempuser.userPassword = Convert.ToString(myReader["userPassword"]);
-                        tempuser.userRole = Convert.ToString(myReader["userRole"]);
-                        users.Add(tempuser);
-                    }
-                    mycon.Close();
-                    return users;
-                }
-            }
+
+            DynamicParameters dynamicParameters = new();
+            dynamicParameters.Add(name: "id", value: user.userEmail, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "nm", value: password, direction: ParameterDirection.Input);
+
+            users = unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+
+            return users;
         }
-        public UserModel updateUser(UserModel user)
+
+        /// <summary>
+        /// Update users details.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public UserModel UpdateUser(UserModel user)
         {
             string query = "call projectmanagementsystem.updateUser(?,?,?,?,?,?)";
-            
-            using (MySqlConnection mycon = unitOfWork.GetConnection())
-            {
 
-                mycon.Open();
-                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
-                {
-                    myCommand.Parameters.AddWithValue("@id", user.userId);
-                    myCommand.Parameters.AddWithValue("@name", user.userName);
-                    myCommand.Parameters.AddWithValue("@address", user.userAddress);
-                    myCommand.Parameters.AddWithValue("@contact", user.userContact);
-                    myCommand.Parameters.AddWithValue("@email", user.userEmail);
-                    myCommand.Parameters.AddWithValue("@role", user.userRole);
-                    myCommand.ExecuteReader();
-                    mycon.Close();
-                }
-                return user;
-            }
+            DynamicParameters dynamicParameters = new();
+            dynamicParameters.Add(name: "id", value: user.userEmail, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "name", value: user.userName, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "address", value: user.userAddress, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "contact", value: user.userContact, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "email", value: user.userEmail, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "role", value: user.userRole, direction: ParameterDirection.Input);
+
+            unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+
+            return user;
         }
 
-        public String deleteUser(int id)
+        /// <summary>
+        /// Deletes User.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public String DeleteUser(int id)
         {
             string query = "call projectmanagementsystem.deleteUser(?);";
             
-            MySqlDataReader myReader;
-            using (MySqlConnection mycon = unitOfWork.GetConnection())
-            {
-                mycon.Open();
-                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
-                {
-                    myCommand.Parameters.AddWithValue("@id", id);
-                    myReader = myCommand.ExecuteReader();
-                    mycon.Close();
-                }
-            }
+            unitOfWork.ExecuteQuery<UserModel>(query);
+
             return ("Deleted Successfully");
+        }
+
+        /// <summary>
+        /// Password converts to hash.
+        /// </summary>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        private static string GetHashedPassword(string password)
+        {
+            var sha = SHA256.Create();
+            var asByteArray = Encoding.Default.GetBytes(password);
+            var hashedPassword = sha.ComputeHash(asByteArray);
+            return Convert.ToBase64String(hashedPassword);
+        }
+
+        /// <summary>
+        /// SMTP code to send OTP.
+        /// </summary>
+        /// <param name="forgot"></param>
+        /// <param name="otp"></param>
+        private static void EmailTemplate(string emailId, string subject, string body)
+        {
+            MimeMessage message = new MimeMessage();
+            MailboxAddress from = new MailboxAddress("Vinayak Bilagi", "vinayakbilagi7@gmail.com");
+            MailboxAddress to = new MailboxAddress(emailId, emailId);
+            message.From.Add(from);
+            message.To.Add(to);
+            message.Subject = subject;
+            BodyBuilder bodyBuilder = new BodyBuilder();
+            bodyBuilder.HtmlBody = body;
+            message.Body = bodyBuilder.ToMessageBody();
+            SmtpClient client = new SmtpClient();
+            client.Connect("smtp.gmail.com", 587, false);
+            client.Authenticate("vinayakbilagi7@gmail.com", "dddtiaivtybwqyfj");
+            client.Send(message);
+            client.Disconnect(true);
+            client.Dispose();
         }
     }
 }

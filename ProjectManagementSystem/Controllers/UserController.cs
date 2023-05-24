@@ -27,7 +27,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(usersClass.addUser(user));
+                return Ok(usersClass.AddUser(user));
             }
             catch (Exception e)
             {
@@ -66,7 +66,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(usersClass.getEmail(user));
+                return Ok(usersClass.GetEmail(user));
             }
             catch (Exception e)
             {
@@ -80,7 +80,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(usersClass.getAll());
+                return Ok(usersClass.GetAll());
             }
             catch (Exception e)
             {
@@ -92,7 +92,7 @@ namespace ProjectManagementSystem.Controllers
         [Route("updatePassword")]
         public IActionResult updatePassword(UserModel user)
         {
-            return Ok(usersClass.updatePassword(user));
+            return Ok(usersClass.UpdatePassword(user));
         }
         [HttpPost]
         [Route("getUserById")]
@@ -100,7 +100,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(usersClass.getUserById(user));
+                return Ok(usersClass.GetUserById(user));
             }
             catch (Exception e)
             {
@@ -114,7 +114,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(usersClass.updateUser(user));
+                return Ok(usersClass.UpdateUser(user));
             }
             catch (Exception e)
             {
@@ -127,7 +127,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(usersClass.adminDashboard());
+                return Ok(usersClass.AdminDashboard());
             }
             catch (Exception e)
             {
@@ -139,7 +139,7 @@ namespace ProjectManagementSystem.Controllers
         [Route("updatePasswordByEmail")]
         public IActionResult updatePasswordByEmail(UserModel user)
         {
-            return Ok(usersClass.updatePasswordByEmail(user));
+            return Ok(usersClass.UpdatePasswordByEmail(user));
         }
 
         [HttpPost]
@@ -148,7 +148,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(usersClass.notification(user));
+                return Ok(usersClass.SendNotification(user));
             }
             catch(Exception e)
             {
@@ -160,7 +160,7 @@ namespace ProjectManagementSystem.Controllers
         [Route("deleteUser")]
         public IActionResult deleteUser(int id)
         {
-            return Ok(usersClass.deleteUser(id));
+            return Ok(usersClass.DeleteUser(id));
         }
 
     }

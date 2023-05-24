@@ -38,5 +38,21 @@ namespace ProjectManagementSystem.Business
                 throw;
             }
         }
+
+        public IEnumerable<T> ExecuteQuery<T>(string query)
+        {
+            return ExecuteQuery<T>(query, null);
+        }
+
+        public IEnumerable<T> ExecuteQuery<T>(string query, DynamicParameters? dynamicParameters)
+        {
+            IEnumerable<T> model;
+            using (GetConnection())
+            {
+                model = Query<T>(query, dynamicParameters, null, commandType: CommandType.Text);
+            }
+
+            return model;
+        }
     }
 }

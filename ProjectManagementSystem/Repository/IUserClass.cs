@@ -4,34 +4,40 @@ namespace ProjectManagementSystem.Business
 {
     public interface IUserClass
     {
-        List<UserModel> GetUserForLogIn(UserModel user);
+
+        // <summary>
+        /// Get User Model for log in.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        IEnumerable<UserModel> GetUserForLogIn(UserModel user);
 
         /// <summary>
         /// Inserts User records into DB.
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        UserModel addUser(UserModel user);
+        UserModel AddUser(UserModel user);
 
         /// <summary>
         /// Updates password of user.
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        UserModel updatePassword(UserModel user);
+        UserModel UpdatePassword(UserModel user);
 
         /// <summary>
         /// Returns All users from DB.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<UserModel> getAll();
+        public IEnumerable<UserModel> GetAll();
 
         /// <summary>
         /// Updates user's password.
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        UserModel updatePasswordByEmail(UserModel user);
+        UserModel UpdatePasswordByEmail(UserModel user);
 
         /// <summary>
         /// Sends OTP to user via email.
@@ -45,7 +51,7 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public IEnumerable<UserModel> getEmail(UserModel user);
+        public IEnumerable<UserModel> GetEmail(UserModel user);
 
         /// <summary>
         /// Compares OTP.
@@ -59,21 +65,32 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public IEnumerable<UserModel> getUserById(UserModel user);
-        public UserModel updateUser(UserModel user);
-        public String deleteUser(int id);
+        public IEnumerable<UserModel> GetUserById(UserModel user);
+
+        /// <summary>
+        /// Update users details.
+        /// </summary>
+        /// <param name="user"></param>
+        public UserModel UpdateUser(UserModel user);
+
+        /// <summary>
+        /// Deletes User.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public String DeleteUser(int id);
 
         /// <summary>
         /// Returns required fields to display on Admins Dashboard.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<UserModel> adminDashboard();
+        public IEnumerable<UserModel> AdminDashboard();
 
         /// <summary>
         /// sends notification to user.
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public string notification(UserModel user);
+        public string SendNotification(UserModel user);
     }
 }
