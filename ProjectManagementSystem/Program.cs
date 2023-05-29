@@ -14,6 +14,7 @@ builder.Services.AddTransient<IProjectClass, ProjectClass>();
 builder.Services.AddTransient<IFeedbackClass, FeedbackClass>();
 builder.Services.AddTransient<IRoleClass, RoleClass>();
 builder.Services.AddTransient<IPermissionClass, PermissionClass>();
+builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>
 {
     build.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader();
