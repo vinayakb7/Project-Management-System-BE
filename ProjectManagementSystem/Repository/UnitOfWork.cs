@@ -47,9 +47,10 @@ namespace ProjectManagementSystem.Business
         public IEnumerable<T> ExecuteQuery<T>(string query, DynamicParameters? dynamicParameters)
         {
             IEnumerable<T> model;
-            using (GetConnection())
+            using (var connection = GetConnection())
             {
                 model = Query<T>(query, dynamicParameters, null, commandType: CommandType.Text);
+                connection.Close();
             }
 
             return model;

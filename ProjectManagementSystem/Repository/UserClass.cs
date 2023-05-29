@@ -6,19 +6,12 @@ using System.Security.Cryptography;
 using System.Text;
 using Dapper;
 using System.Data;
+using ProjectManagementSystem.Constants;
 
 namespace ProjectManagementSystem.Business
 {
     public class UserClass : IUserClass
     {
-        #region Constant Variables
-        private static readonly string SUBJECT_FOR_REGISTERED_USER = "Registered user name and password for Project Approval System";
-        private static readonly string SUBJECT_FOR_NOTIFICATION = "Notification from Admin of Project Approval System";
-        private static readonly string EMAIL_SENT = "Email Sent Successfully!";
-        #endregion
-
-        private static readonly string ADD_USER_QUERY = "projectmanagementsystem.addUser(?,?,?,?,?,?)";
-
         private readonly IUnitOfWork unitOfWork;
         public UserClass(IUnitOfWork unitOfWork)
         {
@@ -32,7 +25,7 @@ namespace ProjectManagementSystem.Business
         /// <returns></returns>
         public UserModel AddUser(UserModel user)
         {
-            string query = ADD_USER_QUERY;
+            string query = Queries.ADD_USER_QUERY;
 
             string password = GetHashedPassword(user.userPassword);
 
@@ -46,7 +39,7 @@ namespace ProjectManagementSystem.Business
 
             unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
 
-            string subject = SUBJECT_FOR_REGISTERED_USER;
+            string subject = Queries.SUBJECT_FOR_REGISTERED_USER;
             string body = "Hello " + user.userName + ",<br /> Your user name is " + user.userEmail + " and password is " + user.userPassword + ".<br />You can use this details to log in to your accont.<br />You can change it later.<br />Thanks & Regard,<br />Admin";
 
             EmailTemplate(user.userEmail, subject, body);
@@ -61,7 +54,7 @@ namespace ProjectManagementSystem.Business
         /// <returns></returns>
         public UserModel UpdatePassword(UserModel user)
         {
-            string query = "projectmanagementsystem.updatePassword(?,?)";
+            string query = Queries.UPDATE_PASSWORD;
 
             string password = GetHashedPassword(user.userPassword);
 
@@ -81,12 +74,12 @@ namespace ProjectManagementSystem.Business
         /// <returns></returns>
         public string SendNotification(UserModel user)
         {
-            string subject = SUBJECT_FOR_NOTIFICATION;
+            string subject = Queries.SUBJECT_FOR_NOTIFICATION;
             string body = user.userAddress;
 
             EmailTemplate(user.userEmail, subject, body);
 
-            return EMAIL_SENT;
+            return Queries.EMAIL_SENT;
         }
 
         /// <summary>
@@ -98,7 +91,7 @@ namespace ProjectManagementSystem.Business
         {
             string password = GetHashedPassword(user.userPassword);
 
-            string query = "projectmanagementsystem.updatePasswordByEmail(?,?)";
+            string query = Queries.UPDATE_PASSWORD_BY_EMAIL;
 
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "email", value: user.userEmail, direction: ParameterDirection.Input);
@@ -117,7 +110,7 @@ namespace ProjectManagementSystem.Business
         public IEnumerable<UserModel> GetEmail(UserModel user)
         {
             IEnumerable<UserModel> users;
-            string query = "call projectmanagementsystem.getEmail(?);";
+            string query = Queries.GET_EMAIL;
 
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "id", value: user.userEmail, direction: ParameterDirection.Input);
@@ -135,7 +128,7 @@ namespace ProjectManagementSystem.Business
         public IEnumerable<UserModel> GetUserById(UserModel user)
         {
             IEnumerable<UserModel> users;
-            string query = "call projectmanagementsystem.getUserById(?);";
+            string query = Queries.GET_USER_BY_ID;
 
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "id", value: user.userId, direction: ParameterDirection.Input);
@@ -152,7 +145,7 @@ namespace ProjectManagementSystem.Business
         public IEnumerable<UserModel> GetAll()
         {
             IEnumerable<UserModel> users;
-            string query = "getAllUser()";
+            string query = Queries.GET_ALL;
 
             users = unitOfWork.ExecuteQuery<UserModel>(query);
 
@@ -166,7 +159,7 @@ namespace ProjectManagementSystem.Business
         public IEnumerable<UserModel> AdminDashboard()
         {
             IEnumerable<UserModel> users;
-            string query = "adminDashboard()";
+            string query = Queries.ADMIN_DASHBOARD;
 
             users = unitOfWork.ExecuteQuery<UserModel>(query);
 
@@ -182,7 +175,7 @@ namespace ProjectManagementSystem.Business
         {
             Random r = new Random();
             var otp = r.Next(100000, 1000000).ToString();
-            string query = "projectmanagementsystem.otp(?,?)";
+            string query = Queries.OTP;
 
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "email", value: forgot.emailId, direction: ParameterDirection.Input);
@@ -206,7 +199,7 @@ namespace ProjectManagementSystem.Business
         public IEnumerable<Forgot> CheckOTP(Forgot forgot)
         {
             IEnumerable<Forgot> forgotL;
-            string query = "projectmanagementsystem.checkOTP(?,?)";
+            string query = Queries.CHECK_OTP;
 
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "email", value: forgot.emailId, direction: ParameterDirection.Input);
@@ -228,7 +221,7 @@ namespace ProjectManagementSystem.Business
 
             string password = GetHashedPassword(user.userPassword);
 
-            string query = "call projectmanagementsystem.getUser(?,?);";
+            string query = Queries.GET_USER_FOR_LOGIN;
 
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "id", value: user.userEmail, direction: ParameterDirection.Input);
@@ -246,7 +239,7 @@ namespace ProjectManagementSystem.Business
         /// <returns></returns>
         public UserModel UpdateUser(UserModel user)
         {
-            string query = "call projectmanagementsystem.updateUser(?,?,?,?,?,?)";
+            string query = Queries.UPDATE_USER;
 
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "id", value: user.userEmail, direction: ParameterDirection.Input);
@@ -268,11 +261,11 @@ namespace ProjectManagementSystem.Business
         /// <returns></returns>
         public String DeleteUser(int id)
         {
-            string query = "call projectmanagementsystem.deleteUser(?);";
+            string query = Queries.DELETE_USER;
             
             unitOfWork.ExecuteQuery<UserModel>(query);
 
-            return ("Deleted Successfully");
+            return Queries.DELETED;
         }
 
         /// <summary>
@@ -296,7 +289,7 @@ namespace ProjectManagementSystem.Business
         private static void EmailTemplate(string emailId, string subject, string body)
         {
             MimeMessage message = new MimeMessage();
-            MailboxAddress from = new MailboxAddress("Vinayak Bilagi", "vinayakbilagi7@gmail.com");
+            MailboxAddress from = new MailboxAddress(Queries.USER_NAME, Queries.EMAIL);
             MailboxAddress to = new MailboxAddress(emailId, emailId);
             message.From.Add(from);
             message.To.Add(to);
@@ -305,8 +298,8 @@ namespace ProjectManagementSystem.Business
             bodyBuilder.HtmlBody = body;
             message.Body = bodyBuilder.ToMessageBody();
             SmtpClient client = new SmtpClient();
-            client.Connect("smtp.gmail.com", 587, false);
-            client.Authenticate("vinayakbilagi7@gmail.com", "dddtiaivtybwqyfj");
+            client.Connect(Queries.EMAIL_SERVER, 587, false);
+            client.Authenticate(Queries.EMAIL, Queries.KEY);
             client.Send(message);
             client.Disconnect(true);
             client.Dispose();
