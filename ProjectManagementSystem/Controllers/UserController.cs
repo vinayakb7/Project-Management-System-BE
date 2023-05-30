@@ -8,30 +8,53 @@ namespace ProjectManagementSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController :  BaseController
     {
         private readonly IUserClass usersClass;
         public UserController(IUserClass userClass)
         {
             this.usersClass = userClass;
         }
-        [HttpPost]
-        public IActionResult GetUser(UserModel user)
-        {
-                return Ok(usersClass.GetUserForLogIn(user));
-        }
 
-        [HttpPost]
-        [Route("addUser")]
-        public IActionResult addUser(UserModel user)
+        /// <summary>
+        /// API for Log in.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        /// <exception cref="CustomException"></exception>
+        [HttpPost("login")]
+        public IActionResult GetUser(UserModel user)
         {
             try
             {
-                return Ok(usersClass.AddUser(user));
+                Result<IEnumerable<UserModel>> result = new();
+                result = usersClass.GetUserForLogIn(user);
+                return result.IsSuccessfull ? Ok(result) : Results(result);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return BadRequest(e.Message);
+                throw new CustomException(new Exception("Error occured while getting users records " + ex.Message));
+            }
+        }
+
+        /// <summary>
+        /// API to add user.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("addUser")]
+        public IActionResult AddUser(UserModel user)
+        {
+            try
+            {
+                Result<int> result = new();
+                result = usersClass.AddUser(user);
+                return result.IsSuccessfull ? Ok(result) : Results(result);
+            }
+            catch (Exception ex)
+            {
+                throw new CustomException(new Exception("Error occured while getting users records " + ex.Message));
             }
         }
         [HttpPost]
@@ -88,23 +111,39 @@ namespace ProjectManagementSystem.Controllers
             }
         }
 
+        /// <summary>
+        /// API to update user password.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         [HttpPut]
         [Route("updatePassword")]
         public IActionResult updatePassword(UserModel user)
         {
-            return Ok(usersClass.UpdatePassword(user));
+            try
+            {
+                Result<UserModel> result = new();
+                result = usersClass.UpdatePassword(user);
+                return result.IsSuccessfull ? Ok(result) : Results(result);
+            }
+            catch (Exception ex)
+            {
+                throw new CustomException(new Exception("Error occured while updating user password " + ex.Message));
+            }
         }
         [HttpPost]
-        [Route("getUserById")]
-        public IActionResult getUserById(UserModel user)
+        [Route("getUserById/{userId}")]
+        public IActionResult getUserById(int userId)
         {
             try
             {
-                return Ok(usersClass.GetUserById(user));
+                Result<IEnumerable<UserModel>> result = new();
+                result = usersClass.GetUserById(userId);
+                return result.IsSuccessfull ? Ok(result) : Results(result);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return BadRequest(e.Message);
+                throw new CustomException(new Exception("Error occured while getting users records " + ex.Message));
             }
         }
 

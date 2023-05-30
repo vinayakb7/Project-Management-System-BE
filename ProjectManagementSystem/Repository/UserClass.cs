@@ -7,6 +7,8 @@ using System.Text;
 using Dapper;
 using System.Data;
 using ProjectManagementSystem.Constants;
+using System.Net;
+using MySqlX.XDevAPI.Common;
 
 namespace ProjectManagementSystem.Business
 {
@@ -23,28 +25,36 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public UserModel AddUser(UserModel user)
+        public Result<int> AddUser(UserModel user)
         {
-            string query = Queries.ADD_USER_QUERY;
+            Result<int> result = new();
+            try
+            {
+                string query = Queries.ADD_USER_QUERY;
 
-            string password = GetHashedPassword(user.userPassword);
+                string password = GetHashedPassword(user.userPassword);
 
-            DynamicParameters dynamicParameters = new();
-            dynamicParameters.Add(name: "name", value: user.userName, direction: ParameterDirection.Input);
-            dynamicParameters.Add(name: "address", value: user.userAddress, direction: ParameterDirection.Input);
-            dynamicParameters.Add(name: "contact", value: user.userContact, direction: ParameterDirection.Input);
-            dynamicParameters.Add(name: "email", value: user.userEmail, direction: ParameterDirection.Input);
-            dynamicParameters.Add(name: "password", value: password, direction: ParameterDirection.Input);
-            dynamicParameters.Add(name: "role", value: user.userRole, direction: ParameterDirection.Input);
+                DynamicParameters dynamicParameters = new();
+                dynamicParameters.Add(name: "name", value: user.userName, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "address", value: user.userAddress, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "contact", value: user.userContact, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "email", value: user.userEmail, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "password", value: password, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "role", value: user.userRole, direction: ParameterDirection.Input);
 
-            unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+                int userResult = (int)unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters).FirstOrDefault().userId;
+                result.Data = userResult;
+                result.IsSuccessfull = true;
+                result.StatusCode = (int)HttpStatusCode.OK;
+            }
+            catch (Exception ex)
+            {
+                SetUnprocessableEntity(result, Queries.UNPROCESSABLE_ENTITY, ex.Message);
+            }
 
-            string subject = Queries.SUBJECT_FOR_REGISTERED_USER;
-            string body = "Hello " + user.userName + ",<br /> Your user name is " + user.userEmail + " and password is " + user.userPassword + ".<br />You can use this details to log in to your accont.<br />You can change it later.<br />Thanks & Regard,<br />Admin";
+            //EmailTemplate(user.userEmail, subject, body);
 
-            EmailTemplate(user.userEmail, subject, body);
-
-            return user;
+            return result;
         }
 
         /// <summary>
@@ -52,19 +62,44 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public UserModel UpdatePassword(UserModel user)
+        public Result<UserModel> UpdatePassword(UserModel user)
         {
-            string query = Queries.UPDATE_PASSWORD;
+            Result<UserModel> result = new();
+            try
+            {
+                var userDetails = GetUserById((int)user.userId);
+                string query = Queries.UPDATE_PASSWORD;
+                if (userDetails.Data != null)
+                {
+                    string password = GetHashedPassword(user.userPassword);
 
-            string password = GetHashedPassword(user.userPassword);
+                    DynamicParameters dynamicParameters = new();
+                    dynamicParameters.Add(name: "id", value: user.userId, direction: ParameterDirection.Input);
+                    dynamicParameters.Add(name: "address", value: password, direction: ParameterDirection.Input);
 
-            DynamicParameters dynamicParameters = new();
-            dynamicParameters.Add(name: "id", value: user.userId, direction: ParameterDirection.Input);
-            dynamicParameters.Add(name: "address", value: password, direction: ParameterDirection.Input);
+                    unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+                    result.IsSuccessfull = true;
+                    result.Data = user;
+                    result.StatusCode = (int)HttpStatusCode.OK;
+                }
+                else
+                {
+                    SetUnprocessableEntity(result, Queries.BAD_REQUEST, $"User with id {user.userId} Not exist to update password.");
+                }
+            }
+            catch(Exception ex)
+            {
+                SetUnprocessableEntity(result, Queries.UNPROCESSABLE_ENTITY, ex.Message);
+            }
 
-            unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+            return result;
+        }
 
-            return user;
+        private static void SetUnprocessableEntity<T>(Result<T> result, int statusCode, string message)
+        {
+            result.IsSuccessfull = false;
+            result.StatusCode = statusCode;
+            result.Message = message;
         }
 
         /// <summary>
@@ -125,17 +160,34 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public IEnumerable<UserModel> GetUserById(UserModel user)
+        public Result<IEnumerable<UserModel>> GetUserById(int userId)
         {
-            IEnumerable<UserModel> users;
-            string query = Queries.GET_USER_BY_ID;
+            Result<IEnumerable<UserModel>> result = new();
+            try
+            {
+                string query = Queries.GET_USER_BY_ID;
 
-            DynamicParameters dynamicParameters = new();
-            dynamicParameters.Add(name: "id", value: user.userId, direction: ParameterDirection.Input);
+                DynamicParameters dynamicParameters = new();
+                dynamicParameters.Add(name: "id", value: userId, direction: ParameterDirection.Input);
 
-            users = unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+                var userResult = unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+                if (userResult.Any())
+                {
+                    result.Data = userResult;
+                    result.IsSuccessfull = true;
+                    result.StatusCode = (int)HttpStatusCode.OK;
+                }
+                else
+                {
+                    SetUnprocessableEntity(result, Queries.BAD_REQUEST, $"User Not found for {userId} user id.");
+                }
+            }
+            catch(Exception ex)
+            {
+                SetUnprocessableEntity(result, Queries.BAD_REQUEST, ex.Message);
+            }
 
-            return users;
+            return result;
         }
 
         /// <summary>
@@ -215,21 +267,38 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public IEnumerable<UserModel> GetUserForLogIn(UserModel user)
+        public Result<IEnumerable<UserModel>> GetUserForLogIn(UserModel user)
         {
-            IEnumerable<UserModel> users;
+            Result<IEnumerable<UserModel>> result = new();
 
-            string password = GetHashedPassword(user.userPassword);
+            try
+            {
+                string password = GetHashedPassword(user.userPassword);
 
-            string query = Queries.GET_USER_FOR_LOGIN;
+                string query = Queries.GET_USER_FOR_LOGIN;
 
-            DynamicParameters dynamicParameters = new();
-            dynamicParameters.Add(name: "id", value: user.userEmail, direction: ParameterDirection.Input);
-            dynamicParameters.Add(name: "nm", value: password, direction: ParameterDirection.Input);
+                DynamicParameters dynamicParameters = new();
+                dynamicParameters.Add(name: "id", value: user.userEmail, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "nm", value: password, direction: ParameterDirection.Input);
 
-            users = unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+                var userResult = unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+                if(userResult.Any())
+                {
+                    result.Data = userResult;
+                    result.IsSuccessfull = true;
+                    result.StatusCode = (int)HttpStatusCode.OK;
+                }
+                else
+                {
+                    SetUnprocessableEntity(result, Queries.BAD_REQUEST, "Invalid user name and password!");
+                }
+            }
+            catch (Exception ex)
+            {
+                SetUnprocessableEntity(result, Queries.UNPROCESSABLE_ENTITY, ex.Message);
+            }
 
-            return users;
+            return result;
         }
 
         /// <summary>

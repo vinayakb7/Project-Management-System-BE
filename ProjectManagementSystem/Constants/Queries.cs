@@ -1,7 +1,14 @@
-﻿namespace ProjectManagementSystem.Constants
+﻿using System.Net;
+
+namespace ProjectManagementSystem.Constants
 {
     public static class Queries
     {
+        #region HTTP constants
+        public static readonly int BAD_REQUEST = (int) HttpStatusCode.BadRequest;
+        public static readonly int UNPROCESSABLE_ENTITY = (int) HttpStatusCode.UnprocessableEntity;
+        #endregion
+
         #region Subject Constants
         public static readonly string SUBJECT_FOR_REGISTERED_USER = "Registered user name and password for Project Approval System";
         public static readonly string SUBJECT_FOR_NOTIFICATION = "Notification from Admin of Project Approval System";

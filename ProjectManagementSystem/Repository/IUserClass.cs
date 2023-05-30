@@ -10,21 +10,21 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        IEnumerable<UserModel> GetUserForLogIn(UserModel user);
+        Result<IEnumerable<UserModel>> GetUserForLogIn(UserModel user);
 
         /// <summary>
         /// Inserts User records into DB.
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        UserModel AddUser(UserModel user);
+        Result<int> AddUser(UserModel user);
 
         /// <summary>
         /// Updates password of user.
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        UserModel UpdatePassword(UserModel user);
+        Result<UserModel> UpdatePassword(UserModel user);
 
         /// <summary>
         /// Returns All users from DB.
@@ -65,7 +65,7 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public IEnumerable<UserModel> GetUserById(UserModel user);
+        public Result<IEnumerable<UserModel>> GetUserById(int userId);
 
         /// <summary>
         /// Update users details.
