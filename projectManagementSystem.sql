@@ -1,13 +1,13 @@
--- MySQL dump 10.13  Distrib 8.0.30, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.31, for Win64 (x86_64)
 --
 -- Host: localhost    Database: projectmanagementsystem
 -- ------------------------------------------------------
--- Server version	8.0.30
+-- Server version	8.0.31
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8mb4 */;
+/*!50503 SET NAMES utf8 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -179,7 +179,7 @@ CREATE TABLE `usertable` (
   UNIQUE KEY `userEmail_UNIQUE` (`userEmail`),
   KEY `role_roleid_idx` (`userRole`),
   CONSTRAINT `role_roleid` FOREIGN KEY (`userRole`) REFERENCES `role` (`roleId`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=155 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=173 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -188,7 +188,7 @@ CREATE TABLE `usertable` (
 
 LOCK TABLES `usertable` WRITE;
 /*!40000 ALTER TABLE `usertable` DISABLE KEYS */;
-INSERT INTO `usertable` VALUES (1,'Vinayak Bilagi','Ichali','9856325698','vinayak@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',1),(2,'Umesh Umesh','Pune','7858969658','umesh@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',2),(3,'Animesh Dhargave','Nagpur','8574963654','animsh@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',3),(4,'Akash Desai ','Karad','7458963214','akash@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',4),(5,'Tushar Pawar','Pune','8525852585','tushar@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',5),(6,'Chetan Thorat','Satara','7414523698','chetan@gmail.com','8585',2),(18,'Vinayak Bilagi','hdskjhk','343897483','malib475@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',2),(19,'Umesh Pal','Pune','8585969654','abc@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',3),(21,'Bhushan Mali','Karad','7458963256','malib475@gmail.co','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',1),(23,'Bhushan Mali','Karad','7458963256','umel@aitglobalinc.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',1),(25,'Bhushan Mali','Karad','7458963256','ume@aitgalinc.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',1),(26,'Umesh Pal','Pune','7412365897','umesh.lobalinc@com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',1),(31,'Swapnil IGL','Aklujjhjh','1234567891','xyz@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',2),(126,'Vinayak Bilagi','Karad','8569856985','vinayakbilagi7gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',3),(134,'Sourabh Paradkar','Ichal','8956321478','sourabh@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',2),(139,'Vinayak Bilagi','dhfasdjk','7858969658','vinayakbilagi7@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',1),(142,'Umesh Pal','adfjal','123654789','xy@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',3),(143,'afdlaj','ljljl','454587854','jjljlj@ljfaljsdf.com','ajdflajldf',2),(144,'adfa','jljk','jlj','temp@gmail.com','l454',2),(145,'string','string','string','vijay','nkYz2HRrWaauwcgvL3xJ/D5JrHC2s4A/lnUt/4xIGvI=',3),(146,'string','string','string','vijayasabe','s6jg4fmrG/46NvIx9nb3i7MKUZ0rIebFMMDu6Ou0pdA=',2),(147,'string','string','string','vijayasabe@gmail.com','s6jg4fmrG/46NvIx9nb3i7MKUZ0rIebFMMDu6Ou0pdA=',2),(148,'string','string','string','u@gmail.com','trx7WFEDGaFR0Wi6PVrss6wKlwjQbdkw83+8ibbNxpc=',2),(149,'hash user','E-Space A2-Building, wadgaon Sheri, 400123','7896541236','tempuser@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',5),(150,'jlj','kjlj','','vinayakj@gamfadf.com','HZWkxtaB7eWxjImyHOtGv+p7jk2PgkEHYVou4pdJNxA=',4),(154,'Vinayak Bilagi','Pune','8569856985','xyz@gmailadjf.com','cjbe+A5Bv1nYCLdAIVQHR96HqP74p53tRSyoevvQAzI=',2);
+INSERT INTO `usertable` VALUES (1,'Vinayak Bilagi','Ichali','9856325698','vinayak@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',1),(2,'Umesh Umesh','Pune','7858969658','umesh@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',2),(3,'Animesh Dhargave','Nagpur','8574963654','animsh@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',3),(4,'Akash Desai ','Karad','7458963214','akash@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',4),(5,'Tushar Pawar','Pune','8525852585','tushar@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',5),(6,'Chetan Thorat','Satara','7414523698','chetan@gmail.com','8585',2),(18,'Vinayak Bilagi','hdskjhk','343897483','malib475@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',2),(19,'Umesh Pal','Pune','8585969654','abc@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',3),(21,'Bhushan Mali','Karad','7458963256','malib475@gmail.co','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',1),(23,'Bhushan Mali','Karad','7458963256','umel@aitglobalinc.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',1),(25,'Bhushan Mali','Karad','7458963256','ume@aitgalinc.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',1),(26,'Umesh Pal','Pune','7412365897','umesh.lobalinc@com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',1),(31,'Swapnil IGL','Aklujjhjh','1234567891','xyz@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',2),(126,'Vinayak Bilagi','Karad','8569856985','vinayakbilagi7gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',3),(134,'Sourabh Paradkar','Ichal','8956321478','sourabh@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',2),(139,'Vinayak Bilagi','dhfasdjk','7858969658','vinayakbilagi7@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',1),(142,'Umesh Pal','adfjal','123654789','xy@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',3),(143,'afdlaj','ljljl','454587854','jjljlj@ljfaljsdf.com','ajdflajldf',2),(144,'adfa','jljk','jlj','temp@gmail.com','l454',2),(145,'string','string','string','vijay','nkYz2HRrWaauwcgvL3xJ/D5JrHC2s4A/lnUt/4xIGvI=',3),(146,'string','string','string','vijayasabe','s6jg4fmrG/46NvIx9nb3i7MKUZ0rIebFMMDu6Ou0pdA=',2),(147,'string','string','string','vijayasabe@gmail.com','s6jg4fmrG/46NvIx9nb3i7MKUZ0rIebFMMDu6Ou0pdA=',2),(148,'string','string','string','u@gmail.com','trx7WFEDGaFR0Wi6PVrss6wKlwjQbdkw83+8ibbNxpc=',2),(149,'hash user','E-Space A2-Building, wadgaon Sheri, 400123','7896541236','tempuser@gmail.com','pmWkWSBCL51Bfkhn79xPuKBKHz//H6B+mY6G9/eieuM=',5),(150,'jlj','kjlj','','vinayakj@gamfadf.com','HZWkxtaB7eWxjImyHOtGv+p7jk2PgkEHYVou4pdJNxA=',4),(154,'Vinayak Bilagi','Pune','8569856985','xyz@gmailadjf.com','cjbe+A5Bv1nYCLdAIVQHR96HqP74p53tRSyoevvQAzI=',2),(155,'Vinayk','Ichalkarnji','9898787676','vinayak2@gmail.com','xsQsglw4ZZrnRaQ+ifsIIUEZf6zS9txly8S8Jh9cfGs=',1),(156,'Vinayk','Ichalkarnji','9898787676','vinayak3@gmail.com','xsQsglw4ZZrnRaQ+ifsIIUEZf6zS9txly8S8Jh9cfGs=',1),(157,'Vinu','string','1233543523','string@gmail.com','dyPNFtKnIeaOzV7/QIkuEfIzEhh9G1v+Hbx+OMsUkJs=',2),(158,'Vinayak Bilagi','string','string','vb@gmail.com','+XEHb8BmgZm5975gzTR2rGX3inoTAD+QRnI7QxqyL3Q=',1),(160,'Vinayak Bilagi','string','string','test@gmail.com','+XEHb8BmgZm5975gzTR2rGX3inoTAD+QRnI7QxqyL3Q=',1),(161,'vinayakb','dskfa','kalsdfj','testtest@gmail.com','test1234',2),(163,'vinayakb','dskfa','kalsdfj','testtest123@gmail.com','test1234',2),(165,'string','string','string','stringtest@gmail.com','l738gKQdAzj7aaQHid1BGHgdJP9haAJJG3C2SGJM16M=',2),(166,'string','string','string','string1234test@gmail.com','RzKH+CmNunFjqJeQiVj3wOrnM+JdLgJ5kuou3JvtL6g=',1),(167,'string','string','string','string1234t5est@gmail.com','RzKH+CmNunFjqJeQiVj3wOrnM+JdLgJ5kuou3JvtL6g=',1),(168,'string','string','string','string768@gmail.com','RzKH+CmNunFjqJeQiVj3wOrnM+JdLgJ5kuou3JvtL6g=',2),(169,'string','string','string','string431241@gmail.com','RzKH+CmNunFjqJeQiVj3wOrnM+JdLgJ5kuou3JvtL6g=',3),(172,'string','string','string','stringtest1@gmail.com','RzKH+CmNunFjqJeQiVj3wOrnM+JdLgJ5kuou3JvtL6g=',1);
 /*!40000 ALTER TABLE `usertable` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -266,6 +266,7 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `addUser`(nm varchar(64), address varchar(64), cotact varchar(64), email varchar(64), pass varchar(355), rl int)
 BEGIN
 insert into usertable(userName,userAddress,userContact,userEmail,userPassword,userRole) values(nm,address,cotact,email,pass,rl);
+select LAST_INSERT_ID() as userId;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -398,7 +399,7 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `getAllUser`()
 BEGIN
-select u.*,r.role as role from usertable u inner join role r on u.userRole = r.roleId;
+select u.userId as userId, u.userName as userName,u.userAddress as userAddress, u.userContact as userContact, u.userEmail as userEmail, u.userPassword as userPassword, r.role as userRole from usertable u inner join role r on u.userRole = r.roleId;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -531,7 +532,7 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `getUser`(email varchar(64),pass varchar(64))
 BEGIN
-select * from usertable where userEmail = email and userPassword COLLATE utf8mb4_general_ci = pass ;
+select u.userId as userId, u.userName as userName,u.userAddress as userAddress, u.userContact as userContact, u.userEmail as userEmail, u.userPassword as userPassword, r.role as userRole from usertable u inner join role r on u.userRole = r.roleId where u.userEmail = email and u.userPassword COLLATE utf8mb4_general_ci = pass ;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -872,4 +873,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-09-15 10:02:42
+-- Dump completed on 2023-06-02 17:45:58

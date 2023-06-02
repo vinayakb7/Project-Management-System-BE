@@ -1,19 +1,27 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Asn1.Mozilla;
 using ProjectManagementSystem.Business;
 using ProjectManagementSystem.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace ProjectManagementSystem.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController :  BaseController
     {
         private readonly IUserClass usersClass;
-        public UserController(IUserClass userClass)
+        private readonly IConfiguration configuration;
+        public UserController(IUserClass userClass, IConfiguration configuration)
         {
             this.usersClass = userClass;
+            this.configuration = configuration;
         }
 
         /// <summary>
@@ -22,14 +30,23 @@ namespace ProjectManagementSystem.Controllers
         /// <param name="user"></param>
         /// <returns></returns>
         /// <exception cref="CustomException"></exception>
+        [AllowAnonymous]
         [HttpPost("login")]
         public IActionResult GetUser(UserModel user)
         {
             try
             {
-                Result<IEnumerable<UserModel>> result = new();
-                result = usersClass.GetUserForLogIn(user);
-                return result.IsSuccessfull ? Ok(result) : Results(result);
+                IActionResult response = Unauthorized();
+                var user_ = AuthenticateUser(user);
+                if (user_ != null)
+                {
+                    var token = GenerateToken(user_);
+                    response = Ok(new { user_ ,token = token });
+                }
+                return response;
+                //Result<IEnumerable<UserModel>> result = new();
+                //result = usersClass.GetUserForLogIn(user);
+                //return result.IsSuccessfull ? Ok(result) : Results(result);
             }
             catch (Exception ex)
             {
@@ -131,6 +148,8 @@ namespace ProjectManagementSystem.Controllers
                 throw new CustomException(new Exception("Error occured while updating user password " + ex.Message));
             }
         }
+
+        [Authorize]
         [HttpPost]
         [Route("getUserById/{userId}")]
         public IActionResult getUserById(int userId)
@@ -200,6 +219,34 @@ namespace ProjectManagementSystem.Controllers
         public IActionResult deleteUser(int id)
         {
             return Ok(usersClass.DeleteUser(id));
+        }
+
+        private UserModel AuthenticateUser(UserModel user)
+        {
+            UserModel _user = usersClass.GetUserForLogIn(user).Data.FirstOrDefault();
+            if (_user != null)
+            {
+                return _user;
+            }
+            return _user;
+        }
+
+        private string GenerateToken(UserModel user)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, user.userEmail),
+                new Claim(ClaimTypes.Role,user.userRole)
+            };
+            var token = new JwtSecurityToken(configuration["Jwt:Issuer"],
+                configuration["Jwt:Audience"],
+                claims,
+                expires: DateTime.Now.AddMinutes(15),
+                signingCredentials: credentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
     }
