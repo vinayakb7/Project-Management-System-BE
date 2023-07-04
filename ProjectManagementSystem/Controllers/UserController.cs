@@ -32,7 +32,7 @@ namespace ProjectManagementSystem.Controllers
         /// <exception cref="CustomException"></exception>
         [AllowAnonymous]
         [HttpPost("login")]
-        public IActionResult GetUser(UserModel user)
+        public IActionResult GetUser(User user)
         {
             try
             {
@@ -61,7 +61,7 @@ namespace ProjectManagementSystem.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("addUser")]
-        public IActionResult AddUser(UserModel user)
+        public IActionResult AddUser(User user)
         {
             try
             {
@@ -102,7 +102,7 @@ namespace ProjectManagementSystem.Controllers
         }
         [HttpPost]
         [Route("getEmail")]
-        public IActionResult getEmail(UserModel user)
+        public IActionResult getEmail(User user)
         {
             try
             {
@@ -135,11 +135,11 @@ namespace ProjectManagementSystem.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("updatePassword")]
-        public IActionResult updatePassword(UserModel user)
+        public IActionResult updatePassword(User user)
         {
             try
             {
-                Result<UserModel> result = new();
+                Result<User> result = new();
                 result = usersClass.UpdatePassword(user);
                 return result.IsSuccessfull ? Ok(result) : Results(result);
             }
@@ -156,7 +156,7 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                Result<IEnumerable<UserModel>> result = new();
+                Result<IEnumerable<User>> result = new();
                 result = usersClass.GetUserById(userId);
                 return result.IsSuccessfull ? Ok(result) : Results(result);
             }
@@ -168,7 +168,7 @@ namespace ProjectManagementSystem.Controllers
 
         [HttpPost]
         [Route("updateUser")]
-        public IActionResult updateUser(UserModel user)
+        public IActionResult updateUser(User user)
         {
             try
             {
@@ -195,14 +195,14 @@ namespace ProjectManagementSystem.Controllers
 
         [HttpPut]
         [Route("updatePasswordByEmail")]
-        public IActionResult updatePasswordByEmail(UserModel user)
+        public IActionResult updatePasswordByEmail(User user)
         {
             return Ok(usersClass.UpdatePasswordByEmail(user));
         }
 
         [HttpPost]
         [Route("sendNotification")]
-        public IActionResult notification(UserModel user)
+        public IActionResult notification(User user)
         {
             try
             {
@@ -221,9 +221,9 @@ namespace ProjectManagementSystem.Controllers
             return Ok(usersClass.DeleteUser(id));
         }
 
-        private UserModel AuthenticateUser(UserModel user)
+        private User AuthenticateUser(User user)
         {
-            UserModel _user = usersClass.GetUserForLogIn(user).Data.FirstOrDefault();
+            User _user = usersClass.GetUserForLogIn(user).Data.FirstOrDefault();
             if (_user != null)
             {
                 return _user;
@@ -231,7 +231,7 @@ namespace ProjectManagementSystem.Controllers
             return _user;
         }
 
-        private string GenerateToken(UserModel user)
+        private string GenerateToken(User user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);

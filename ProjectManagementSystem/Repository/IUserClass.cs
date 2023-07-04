@@ -10,34 +10,34 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        Result<IEnumerable<UserModel>> GetUserForLogIn(UserModel user);
+        Result<IEnumerable<User>> GetUserForLogIn(User user);
 
         /// <summary>
         /// Inserts User records into DB.
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        Result<int> AddUser(UserModel user);
+        Result<int> AddUser(User user);
 
         /// <summary>
         /// Updates password of user.
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        Result<UserModel> UpdatePassword(UserModel user);
+        Result<User> UpdatePassword(User user);
 
         /// <summary>
         /// Returns All users from DB.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<UserModel> GetAll();
+        public IEnumerable<User> GetAll();
 
         /// <summary>
         /// Updates user's password.
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        UserModel UpdatePasswordByEmail(UserModel user);
+        User UpdatePasswordByEmail(User user);
 
         /// <summary>
         /// Sends OTP to user via email.
@@ -51,7 +51,7 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public IEnumerable<UserModel> GetEmail(UserModel user);
+        public IEnumerable<User> GetEmail(User user);
 
         /// <summary>
         /// Compares OTP.
@@ -65,13 +65,13 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public Result<IEnumerable<UserModel>> GetUserById(int userId);
+        public Result<IEnumerable<User>> GetUserById(int userId);
 
         /// <summary>
         /// Update users details.
         /// </summary>
         /// <param name="user"></param>
-        public UserModel UpdateUser(UserModel user);
+        public User UpdateUser(User user);
 
         /// <summary>
         /// Deletes User.
@@ -84,13 +84,13 @@ namespace ProjectManagementSystem.Business
         /// Returns required fields to display on Admins Dashboard.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<UserModel> AdminDashboard();
+        public IEnumerable<User> AdminDashboard();
 
         /// <summary>
         /// sends notification to user.
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public string SendNotification(UserModel user);
+        public string SendNotification(User user);
     }
 }

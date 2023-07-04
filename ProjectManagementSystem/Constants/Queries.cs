@@ -2,7 +2,7 @@
 
 namespace ProjectManagementSystem.Constants
 {
-    public static class Queries
+    public interface IQueries
     {
         #region HTTP constants
         public static readonly int BAD_REQUEST = (int) HttpStatusCode.BadRequest;

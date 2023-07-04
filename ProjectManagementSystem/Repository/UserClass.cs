@@ -25,12 +25,17 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public Result<int> AddUser(UserModel user)
+        public Result<int> AddUser(User user)
         {
+            Asserts.IsNotNull(user, "No User Given.");
+            Asserts.IsNotEmpty(user.userEmail, "Email cant be null!");
+            Asserts.IsNotEmpty(user.userPassword, "Password cant be null!");
+            Asserts.IsNotEmpty(user.userRole, "Role cant be null!");
+
             Result<int> result = new();
             try
             {
-                string query = Queries.ADD_USER_QUERY;
+                string query = IQueries.ADD_USER_QUERY;
 
                 string password = GetHashedPassword(user.userPassword);
 
@@ -42,14 +47,14 @@ namespace ProjectManagementSystem.Business
                 dynamicParameters.Add(name: "password", value: password, direction: ParameterDirection.Input);
                 dynamicParameters.Add(name: "role", value: user.userRole, direction: ParameterDirection.Input);
 
-                int userResult = (int)unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters).FirstOrDefault().userId;
+                int userResult = (int)unitOfWork.ExecuteQuery<User>(query, dynamicParameters).FirstOrDefault().userId;
                 result.Data = userResult;
                 result.IsSuccessfull = true;
                 result.StatusCode = (int)HttpStatusCode.OK;
             }
             catch (Exception ex)
             {
-                SetUnprocessableEntity(result, Queries.UNPROCESSABLE_ENTITY, ex.Message);
+                SetUnprocessableEntity(result, IQueries.UNPROCESSABLE_ENTITY, ex.Message);
             }
 
             //EmailTemplate(user.userEmail, subject, body);
@@ -62,13 +67,13 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public Result<UserModel> UpdatePassword(UserModel user)
+        public Result<User> UpdatePassword(User user)
         {
-            Result<UserModel> result = new();
+            Result<User> result = new();
             try
             {
                 var userDetails = GetUserById((int)user.userId);
-                string query = Queries.UPDATE_PASSWORD;
+                string query = IQueries.UPDATE_PASSWORD;
                 if (userDetails.Data != null)
                 {
                     string password = GetHashedPassword(user.userPassword);
@@ -77,19 +82,19 @@ namespace ProjectManagementSystem.Business
                     dynamicParameters.Add(name: "id", value: user.userId, direction: ParameterDirection.Input);
                     dynamicParameters.Add(name: "address", value: password, direction: ParameterDirection.Input);
 
-                    unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+                    unitOfWork.ExecuteQuery<User>(query, dynamicParameters);
                     result.IsSuccessfull = true;
                     result.Data = user;
                     result.StatusCode = (int)HttpStatusCode.OK;
                 }
                 else
                 {
-                    SetUnprocessableEntity(result, Queries.BAD_REQUEST, $"User with id {user.userId} Not exist to update password.");
+                    SetUnprocessableEntity(result, IQueries.BAD_REQUEST, $"User with id {user.userId} Not exist to update password.");
                 }
             }
             catch(Exception ex)
             {
-                SetUnprocessableEntity(result, Queries.UNPROCESSABLE_ENTITY, ex.Message);
+                SetUnprocessableEntity(result, IQueries.UNPROCESSABLE_ENTITY, ex.Message);
             }
 
             return result;
@@ -107,14 +112,14 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public string SendNotification(UserModel user)
+        public string SendNotification(User user)
         {
-            string subject = Queries.SUBJECT_FOR_NOTIFICATION;
+            string subject = IQueries.SUBJECT_FOR_NOTIFICATION;
             string body = user.userAddress;
 
             EmailTemplate(user.userEmail, subject, body);
 
-            return Queries.EMAIL_SENT;
+            return IQueries.EMAIL_SENT;
         }
 
         /// <summary>
@@ -122,17 +127,17 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public UserModel UpdatePasswordByEmail(UserModel user)
+        public User UpdatePasswordByEmail(User user)
         {
             string password = GetHashedPassword(user.userPassword);
 
-            string query = Queries.UPDATE_PASSWORD_BY_EMAIL;
+            string query = IQueries.UPDATE_PASSWORD_BY_EMAIL;
 
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "email", value: user.userEmail, direction: ParameterDirection.Input);
             dynamicParameters.Add(name: "address", value: password, direction: ParameterDirection.Input);
 
-            unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+            unitOfWork.ExecuteQuery<User>(query, dynamicParameters);
 
             return user;
         }
@@ -142,15 +147,15 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public IEnumerable<UserModel> GetEmail(UserModel user)
+        public IEnumerable<User> GetEmail(User user)
         {
-            IEnumerable<UserModel> users;
-            string query = Queries.GET_EMAIL;
+            IEnumerable<User> users;
+            string query = IQueries.GET_EMAIL;
 
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "id", value: user.userEmail, direction: ParameterDirection.Input);
 
-            users = unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+            users = unitOfWork.ExecuteQuery<User>(query, dynamicParameters);
 
             return users;
         }
@@ -160,17 +165,17 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public Result<IEnumerable<UserModel>> GetUserById(int userId)
+        public Result<IEnumerable<User>> GetUserById(int userId)
         {
-            Result<IEnumerable<UserModel>> result = new();
+            Result<IEnumerable<User>> result = new();
             try
             {
-                string query = Queries.GET_USER_BY_ID;
+                string query = IQueries.GET_USER_BY_ID;
 
                 DynamicParameters dynamicParameters = new();
                 dynamicParameters.Add(name: "id", value: userId, direction: ParameterDirection.Input);
 
-                var userResult = unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+                var userResult = unitOfWork.ExecuteQuery<User>(query, dynamicParameters);
                 if (userResult.Any())
                 {
                     result.Data = userResult;
@@ -179,12 +184,12 @@ namespace ProjectManagementSystem.Business
                 }
                 else
                 {
-                    SetUnprocessableEntity(result, Queries.BAD_REQUEST, $"User Not found for {userId} user id.");
+                    SetUnprocessableEntity(result, IQueries.BAD_REQUEST, $"User Not found for {userId} user id.");
                 }
             }
             catch(Exception ex)
             {
-                SetUnprocessableEntity(result, Queries.BAD_REQUEST, ex.Message);
+                SetUnprocessableEntity(result, IQueries.BAD_REQUEST, ex.Message);
             }
 
             return result;
@@ -194,12 +199,12 @@ namespace ProjectManagementSystem.Business
         /// Returns All users from DB.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<UserModel> GetAll()
+        public IEnumerable<User> GetAll()
         {
-            IEnumerable<UserModel> users;
-            string query = Queries.GET_ALL;
+            IEnumerable<User> users;
+            string query = IQueries.GET_ALL;
 
-            users = unitOfWork.ExecuteQuery<UserModel>(query);
+            users = unitOfWork.ExecuteQuery<User>(query);
 
             return users;
         }
@@ -208,12 +213,12 @@ namespace ProjectManagementSystem.Business
         /// Returns required fields to display on Admins Dashboard.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<UserModel> AdminDashboard()
+        public IEnumerable<User> AdminDashboard()
         {
-            IEnumerable<UserModel> users;
-            string query = Queries.ADMIN_DASHBOARD;
+            IEnumerable<User> users;
+            string query = IQueries.ADMIN_DASHBOARD;
 
-            users = unitOfWork.ExecuteQuery<UserModel>(query);
+            users = unitOfWork.ExecuteQuery<User>(query);
 
             return users;
         }
@@ -227,7 +232,7 @@ namespace ProjectManagementSystem.Business
         {
             Random r = new Random();
             var otp = r.Next(100000, 1000000).ToString();
-            string query = Queries.OTP;
+            string query = IQueries.OTP;
 
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "email", value: forgot.emailId, direction: ParameterDirection.Input);
@@ -251,7 +256,7 @@ namespace ProjectManagementSystem.Business
         public IEnumerable<Forgot> CheckOTP(Forgot forgot)
         {
             IEnumerable<Forgot> forgotL;
-            string query = Queries.CHECK_OTP;
+            string query = IQueries.CHECK_OTP;
 
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "email", value: forgot.emailId, direction: ParameterDirection.Input);
@@ -267,21 +272,21 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public Result<IEnumerable<UserModel>> GetUserForLogIn(UserModel user)
+        public Result<IEnumerable<User>> GetUserForLogIn(User user)
         {
-            Result<IEnumerable<UserModel>> result = new();
+            Result<IEnumerable<User>> result = new();
 
             try
             {
                 string password = GetHashedPassword(user.userPassword);
 
-                string query = Queries.GET_USER_FOR_LOGIN;
+                string query = IQueries.GET_USER_FOR_LOGIN;
 
                 DynamicParameters dynamicParameters = new();
                 dynamicParameters.Add(name: "id", value: user.userEmail, direction: ParameterDirection.Input);
                 dynamicParameters.Add(name: "nm", value: password, direction: ParameterDirection.Input);
 
-                var userResult = unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+                var userResult = unitOfWork.ExecuteQuery<User>(query, dynamicParameters);
                 if(userResult.Any())
                 {
                     result.Data = userResult;
@@ -290,12 +295,12 @@ namespace ProjectManagementSystem.Business
                 }
                 else
                 {
-                    SetUnprocessableEntity(result, Queries.BAD_REQUEST, "Invalid user name and password!");
+                    SetUnprocessableEntity(result, IQueries.BAD_REQUEST, "Invalid user name and password!");
                 }
             }
             catch (Exception ex)
             {
-                SetUnprocessableEntity(result, Queries.UNPROCESSABLE_ENTITY, ex.Message);
+                SetUnprocessableEntity(result, IQueries.UNPROCESSABLE_ENTITY, ex.Message);
             }
 
             return result;
@@ -306,9 +311,9 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public UserModel UpdateUser(UserModel user)
+        public User UpdateUser(User user)
         {
-            string query = Queries.UPDATE_USER;
+            string query = IQueries.UPDATE_USER;
 
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "id", value: user.userEmail, direction: ParameterDirection.Input);
@@ -318,7 +323,7 @@ namespace ProjectManagementSystem.Business
             dynamicParameters.Add(name: "email", value: user.userEmail, direction: ParameterDirection.Input);
             dynamicParameters.Add(name: "role", value: user.userRole, direction: ParameterDirection.Input);
 
-            unitOfWork.ExecuteQuery<UserModel>(query, dynamicParameters);
+            unitOfWork.ExecuteQuery<User>(query, dynamicParameters);
 
             return user;
         }
@@ -330,11 +335,11 @@ namespace ProjectManagementSystem.Business
         /// <returns></returns>
         public String DeleteUser(int id)
         {
-            string query = Queries.DELETE_USER;
+            string query = IQueries.DELETE_USER;
             
-            unitOfWork.ExecuteQuery<UserModel>(query);
+            unitOfWork.ExecuteQuery<User>(query);
 
-            return Queries.DELETED;
+            return IQueries.DELETED;
         }
 
         /// <summary>
@@ -358,7 +363,7 @@ namespace ProjectManagementSystem.Business
         private static void EmailTemplate(string emailId, string subject, string body)
         {
             MimeMessage message = new MimeMessage();
-            MailboxAddress from = new MailboxAddress(Queries.USER_NAME, Queries.EMAIL);
+            MailboxAddress from = new MailboxAddress(IQueries.USER_NAME, IQueries.EMAIL);
             MailboxAddress to = new MailboxAddress(emailId, emailId);
             message.From.Add(from);
             message.To.Add(to);
@@ -367,8 +372,8 @@ namespace ProjectManagementSystem.Business
             bodyBuilder.HtmlBody = body;
             message.Body = bodyBuilder.ToMessageBody();
             SmtpClient client = new SmtpClient();
-            client.Connect(Queries.EMAIL_SERVER, 587, false);
-            client.Authenticate(Queries.EMAIL, Queries.KEY);
+            client.Connect(IQueries.EMAIL_SERVER, 587, false);
+            client.Authenticate(IQueries.EMAIL, IQueries.KEY);
             client.Send(message);
             client.Disconnect(true);
             client.Dispose();

@@ -1,6 +1,6 @@
 ﻿namespace ProjectManagementSystem.Models
 {
-    public class UserModel
+    public class User
     {
         public int userId { get; set; }
         public string userName { get; set; } = string.Empty;
