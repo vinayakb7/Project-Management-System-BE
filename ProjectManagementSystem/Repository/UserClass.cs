@@ -167,6 +167,8 @@ namespace ProjectManagementSystem.Business
         /// <returns></returns>
         public Result<IEnumerable<User>> GetUserById(int userId)
         {
+            Asserts.IsTrue(userId > 0, "User Id is not Valid");
+
             Result<IEnumerable<User>> result = new();
             try
             {
@@ -176,6 +178,8 @@ namespace ProjectManagementSystem.Business
                 dynamicParameters.Add(name: "id", value: userId, direction: ParameterDirection.Input);
 
                 var userResult = unitOfWork.ExecuteQuery<User>(query, dynamicParameters);
+                Asserts.IsNotNull(userResult, $"Unable to get user details for user id {userId}");
+
                 if (userResult.Any())
                 {
                     result.Data = userResult;
@@ -205,6 +209,7 @@ namespace ProjectManagementSystem.Business
             string query = IQueries.GET_ALL;
 
             users = unitOfWork.ExecuteQuery<User>(query);
+            Asserts.IsNotNull(users, "Unable to get User Details");
 
             return users;
         }
@@ -219,6 +224,7 @@ namespace ProjectManagementSystem.Business
             string query = IQueries.ADMIN_DASHBOARD;
 
             users = unitOfWork.ExecuteQuery<User>(query);
+            Asserts.IsNotNull(users, "Unable to get User Details");
 
             return users;
         }
@@ -231,7 +237,9 @@ namespace ProjectManagementSystem.Business
         public Forgot SendOTP(Forgot forgot)
         {
             Random r = new Random();
-            var otp = r.Next(100000, 1000000).ToString();
+            string otp = r.Next(100000, 1000000).ToString();
+            Asserts.IsTrue(otp.Length == 6, "Failed To generate OPT");
+
             string query = IQueries.OTP;
 
             DynamicParameters dynamicParameters = new();
