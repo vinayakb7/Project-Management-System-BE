@@ -27,10 +27,10 @@ namespace ProjectManagementSystem.Business
         /// <returns></returns>
         public Result<int> AddUser(User user)
         {
-            Asserts.IsNotNull(user, "No User Given.");
-            Asserts.IsNotEmpty(user.userEmail, "Email cant be null!");
-            Asserts.IsNotEmpty(user.userPassword, "Password cant be null!");
-            Asserts.IsNotEmpty(user.userRole, "Role cant be null!");
+            Asserts.IsNotNull(user, "No Data Fount to insert!.");
+            Asserts.IsNotEmpty(user.userEmail, "Email cannot be empty!");
+            Asserts.IsNotEmpty(user.userPassword, "Password cannot be empty!");
+            Asserts.IsNotEmpty(user.userRole, "Role cannot be empty!");
 
             Result<int> result = new();
             try
