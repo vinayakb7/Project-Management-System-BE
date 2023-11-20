@@ -5,6 +5,7 @@ namespace ProjectManagementSystem.Constants
     public interface IQueries
     {
         #region HTTP constants
+        public static readonly int SUCCESS_STATUS = (int) HttpStatusCode.OK;
         public static readonly int BAD_REQUEST = (int) HttpStatusCode.BadRequest;
         public static readonly int UNPROCESSABLE_ENTITY = (int) HttpStatusCode.UnprocessableEntity;
         #endregion

@@ -55,7 +55,7 @@ namespace ProjectManagementSystem.Business
                 unitOfWork.Commit();
                 result.Data = userResult;
                 result.IsSuccessfull = true;
-                result.StatusCode = (int)HttpStatusCode.OK;
+                result.StatusCode = IQueries.SUCCESS_STATUS;
             }
             catch (Exception ex)
             {
@@ -78,7 +78,7 @@ namespace ProjectManagementSystem.Business
             Result<User> result = new();
             try
             {
-                var userDetails = GetUserById((int)user.userId);
+                var userDetails = GetUserById(user.userId);
                 string query = IQueries.UPDATE_PASSWORD;
                 if (userDetails.Data != null)
                 {
