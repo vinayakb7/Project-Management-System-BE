@@ -9,11 +9,14 @@ using System.Data;
 using ProjectManagementSystem.Constants;
 using System.Net;
 using MySqlX.XDevAPI.Common;
+using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 
 namespace ProjectManagementSystem.Business
 {
     public class UserClass : IUserClass
     {
+        public IDbTransaction transaction;
+
         private readonly IUnitOfWork unitOfWork;
         public UserClass(IUnitOfWork unitOfWork)
         {
@@ -35,25 +38,28 @@ namespace ProjectManagementSystem.Business
             Result<int> result = new();
             try
             {
+                unitOfWork.Begin();
                 string query = IQueries.ADD_USER_QUERY;
 
-                string password = GetHashedPassword(user.userPassword);
+                HashedPassword(user);
 
                 DynamicParameters dynamicParameters = new();
                 dynamicParameters.Add(name: "name", value: user.userName, direction: ParameterDirection.Input);
                 dynamicParameters.Add(name: "address", value: user.userAddress, direction: ParameterDirection.Input);
                 dynamicParameters.Add(name: "contact", value: user.userContact, direction: ParameterDirection.Input);
                 dynamicParameters.Add(name: "email", value: user.userEmail, direction: ParameterDirection.Input);
-                dynamicParameters.Add(name: "password", value: password, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "password", value: user.userPassword, direction: ParameterDirection.Input);
                 dynamicParameters.Add(name: "role", value: user.userRole, direction: ParameterDirection.Input);
 
                 int userResult = (int)unitOfWork.ExecuteQuery<User>(query, dynamicParameters).FirstOrDefault().userId;
+                unitOfWork.Commit();
                 result.Data = userResult;
                 result.IsSuccessfull = true;
                 result.StatusCode = (int)HttpStatusCode.OK;
             }
             catch (Exception ex)
             {
+                unitOfWork.RollBack();
                 SetUnprocessableEntity(result, IQueries.UNPROCESSABLE_ENTITY, ex.Message);
             }
 
@@ -76,11 +82,11 @@ namespace ProjectManagementSystem.Business
                 string query = IQueries.UPDATE_PASSWORD;
                 if (userDetails.Data != null)
                 {
-                    string password = GetHashedPassword(user.userPassword);
+                    HashedPassword(user);
 
                     DynamicParameters dynamicParameters = new();
                     dynamicParameters.Add(name: "id", value: user.userId, direction: ParameterDirection.Input);
-                    dynamicParameters.Add(name: "address", value: password, direction: ParameterDirection.Input);
+                    dynamicParameters.Add(name: "address", value: user.userPassword, direction: ParameterDirection.Input);
 
                     unitOfWork.ExecuteQuery<User>(query, dynamicParameters);
                     result.IsSuccessfull = true;
@@ -105,6 +111,7 @@ namespace ProjectManagementSystem.Business
             result.IsSuccessfull = false;
             result.StatusCode = statusCode;
             result.Message = message;
+
         }
 
         /// <summary>
@@ -129,13 +136,13 @@ namespace ProjectManagementSystem.Business
         /// <returns></returns>
         public User UpdatePasswordByEmail(User user)
         {
-            string password = GetHashedPassword(user.userPassword);
+            HashedPassword(user);
 
             string query = IQueries.UPDATE_PASSWORD_BY_EMAIL;
 
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add(name: "email", value: user.userEmail, direction: ParameterDirection.Input);
-            dynamicParameters.Add(name: "address", value: password, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "address", value: user.userPassword, direction: ParameterDirection.Input);
 
             unitOfWork.ExecuteQuery<User>(query, dynamicParameters);
 
@@ -203,15 +210,31 @@ namespace ProjectManagementSystem.Business
         /// Returns All users from DB.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<User> GetAll()
+        public Result<IEnumerable<User>> GetAll()
         {
-            IEnumerable<User> users;
-            string query = IQueries.GET_ALL;
+            Result<IEnumerable<User>> result = new();
+            try
+            {
+                string query = IQueries.GET_ALL;
 
-            users = unitOfWork.ExecuteQuery<User>(query);
-            Asserts.IsNotNull(users, "Unable to get User Details");
-
-            return users;
+                var usersData = unitOfWork.ExecuteQuery<User>(query);
+                Asserts.IsNotNull(usersData, "Unable to get User Details");
+                if (usersData.Any())
+                {
+                    result.Data = usersData;
+                    result.IsSuccessfull = true;
+                    result.StatusCode = (int)HttpStatusCode.OK;
+                }
+                else
+                {
+                    SetUnprocessableEntity(result, IQueries.BAD_REQUEST, $"Unable to find users data.");
+                }
+            }
+            catch (Exception ex)
+            {
+                SetUnprocessableEntity(result, IQueries.BAD_REQUEST, ex.Message);
+            }
+            return result;
         }
 
         /// <summary>
@@ -234,26 +257,37 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="forgot"></param>
         /// <returns></returns>
-        public Forgot SendOTP(Forgot forgot)
+        public Result<string> SendOTP(Forgot forgot)
         {
-            Random r = new Random();
-            string otp = r.Next(100000, 1000000).ToString();
-            Asserts.IsTrue(otp.Length == 6, "Failed To generate OPT");
+            Result<string> result = new();
+            try
+            {
+                Random r = new Random();
+                string otp = r.Next(100000, 1000000).ToString();
+                Asserts.IsTrue(otp.Length == 6, "Failed To generate OPT");
 
-            string query = IQueries.OTP;
+                string query = IQueries.OTP;
 
-            DynamicParameters dynamicParameters = new();
-            dynamicParameters.Add(name: "email", value: forgot.emailId, direction: ParameterDirection.Input);
-            dynamicParameters.Add(name: "otp", value: otp, direction: ParameterDirection.Input);
+                DynamicParameters dynamicParameters = new();
+                dynamicParameters.Add(name: "email", value: forgot.emailId, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "otp", value: otp, direction: ParameterDirection.Input);
 
-            unitOfWork.ExecuteQuery<Forgot>(query, dynamicParameters);
+                unitOfWork.ExecuteQuery<Forgot>(query, dynamicParameters);
 
-            string subject = "OTP To Change Password";
-            string body = "Your OTP to change Password is " + otp + "<br />Thanks & Regards<br/>Admin";
+                string subject = "OTP To Change Password";
+                string body = "Your OTP to change Password is " + otp + "<br />Thanks & Regards<br/>Admin";
 
-            EmailTemplate(forgot.emailId, subject, body);
+                EmailTemplate(forgot.emailId, subject, body);
+                result.Data = "Email Send Successfully!";
+                result.IsSuccessfull = true;
+                result.StatusCode = (int)HttpStatusCode.OK;
+            }
+            catch (Exception ex)
+            {
+                SetUnprocessableEntity(result, IQueries.BAD_REQUEST, ex.Message);
+            }
 
-            return forgot;
+            return result;
         }
 
         /// <summary>
@@ -261,18 +295,42 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="forgot"></param>
         /// <returns></returns>
-        public IEnumerable<Forgot> CheckOTP(Forgot forgot)
+        public Result<IEnumerable<Forgot>> CheckOTP(Forgot forgot)
         {
-            IEnumerable<Forgot> forgotL;
-            string query = IQueries.CHECK_OTP;
+            Asserts.IsNotNull(forgot, "Input Model null here!");
+            Asserts.IsNotNull(forgot.emailId, "Email Id cannot be empty!");
+            Asserts.IsNotNull(forgot.otp, "opt cannot be empty!");
 
-            DynamicParameters dynamicParameters = new();
-            dynamicParameters.Add(name: "email", value: forgot.emailId, direction: ParameterDirection.Input);
-            dynamicParameters.Add(name: "otp", value: forgot.otp, direction: ParameterDirection.Input);
+            Result<IEnumerable<Forgot>> result = new();
+            try
+            {
+                string query = IQueries.CHECK_OTP;
 
-            forgotL = unitOfWork.ExecuteQuery<Forgot>(query, dynamicParameters);
+                DynamicParameters dynamicParameters = new();
+                dynamicParameters.Add(name: "email", value: forgot.emailId, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "otp", value: forgot.otp, direction: ParameterDirection.Input);
 
-            return forgotL;
+                var data = unitOfWork.ExecuteQuery<Forgot>(query, dynamicParameters);
+                Asserts.IsNotNull(data, "Data Cannot be null here!");
+
+                if (data.Any())
+                {
+                    result.Data = data;
+                    result.IsSuccessfull = true;
+                    result.StatusCode = (int)HttpStatusCode.OK;
+                }
+                else
+                {
+                    SetUnprocessableEntity(result, IQueries.BAD_REQUEST, $"Unable to find data.");
+                }
+            }
+            catch (Exception ex)
+            {
+                SetUnprocessableEntity(result, IQueries.BAD_REQUEST, ex.Message);
+            }
+            
+
+            return result;
         }
 
         /// <summary>
@@ -286,13 +344,13 @@ namespace ProjectManagementSystem.Business
 
             try
             {
-                string password = GetHashedPassword(user.userPassword);
+                HashedPassword(user);
 
                 string query = IQueries.GET_USER_FOR_LOGIN;
 
                 DynamicParameters dynamicParameters = new();
                 dynamicParameters.Add(name: "id", value: user.userEmail, direction: ParameterDirection.Input);
-                dynamicParameters.Add(name: "nm", value: password, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "nm", value: user.userPassword, direction: ParameterDirection.Input);
 
                 var userResult = unitOfWork.ExecuteQuery<User>(query, dynamicParameters);
                 if(userResult.Any())
@@ -355,12 +413,12 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="password"></param>
         /// <returns></returns>
-        private static string GetHashedPassword(string password)
+        private static void HashedPassword(User user)
         {
             var sha = SHA256.Create();
-            var asByteArray = Encoding.Default.GetBytes(password);
+            var asByteArray = Encoding.Default.GetBytes(user.userPassword);
             var hashedPassword = sha.ComputeHash(asByteArray);
-            return Convert.ToBase64String(hashedPassword);
+            user.userPassword = Convert.ToBase64String(hashedPassword);
         }
 
         /// <summary>

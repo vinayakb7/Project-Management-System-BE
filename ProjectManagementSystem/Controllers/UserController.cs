@@ -80,11 +80,13 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(usersClass.SendOTP(forgot));
+                Result<string> result = new();
+                result = usersClass.SendOTP(forgot);
+                return result.IsSuccessfull ? Ok(result) : Results(result);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return BadRequest(e.Message);
+                throw new CustomException(new Exception("Error occured while sending OTP " + ex.Message));
             }
         }
         [HttpPost]
@@ -93,11 +95,13 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(usersClass.CheckOTP(forgot));
+                Result<IEnumerable<Forgot>> result = new();
+                result = usersClass.CheckOTP(forgot);
+                return result.IsSuccessfull ? Ok(result) : Results(result);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return BadRequest(e.Message);
+                throw new CustomException(new Exception("Error occured while sending OTP " + ex.Message));
             }
         }
         [HttpPost]
@@ -120,11 +124,13 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(usersClass.GetAll());
+                Result<IEnumerable<User>> result = new();
+                result = usersClass.GetAll();
+                return result.IsSuccessfull ? Ok(result) : Results(result);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return BadRequest(e.Message);
+                throw new CustomException(new Exception("Error occured while getting users records " + ex.Message));
             }
         }
 

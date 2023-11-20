@@ -30,7 +30,7 @@ namespace ProjectManagementSystem.Business
         /// Returns All users from DB.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<User> GetAll();
+        public Result<IEnumerable<User>> GetAll();
 
         /// <summary>
         /// Updates user's password.
@@ -44,7 +44,7 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="forgot"></param>
         /// <returns></returns>
-        public Forgot SendOTP(Forgot forgot);
+        public Result<string> SendOTP(Forgot forgot);
 
         /// <summary>
         /// returns users list depends on email.
@@ -58,7 +58,7 @@ namespace ProjectManagementSystem.Business
         /// </summary>
         /// <param name="forgot"></param>
         /// <returns></returns>
-        public IEnumerable<Forgot> CheckOTP(Forgot forgot);
+        public Result<IEnumerable<Forgot>> CheckOTP(Forgot forgot);
 
         /// <summary>
         /// returns users list depends on id.
