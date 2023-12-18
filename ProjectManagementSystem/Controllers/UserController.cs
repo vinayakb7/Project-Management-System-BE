@@ -244,8 +244,8 @@ namespace ProjectManagementSystem.Controllers
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, user.userEmail),
-                new Claim(ClaimTypes.Role,user.userRole)
+                new Claim(ClaimTypes.Name, user.UserEmail),
+                new Claim(ClaimTypes.Role,user.UserRole)
             };
             var token = new JwtSecurityToken(configuration["Jwt:Issuer"],
                 configuration["Jwt:Audience"],

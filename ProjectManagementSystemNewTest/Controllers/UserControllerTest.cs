@@ -1,4 +1,8 @@
-﻿namespace ProjectManagementSystemNewTest.Controllers
+﻿
+
+using System.Text.Json;
+
+namespace ProjectManagementSystemNewTest.Controllers
 {
     /// <summary>
     /// Test class for <see cref="UserController"/>.
@@ -28,33 +32,37 @@
         [TestMethod]
         public void ShouldSuccessfullyGetUserTest()
         {
+            List<User> expectedUserList = new() { MockUserDetails() };
             //Setup
-            usersClass.Setup(x => x.GetAll()).Returns(MockUserData());
+            usersClass.Setup(x => x.GetAll()).Returns(GetSuccessResult(expectedUserList.AsEnumerable()));
             //Actual Call
-            var actualData = userController.getAll() as OkObjectResult;
+            dynamic okObjectResult = (userController.getAll() as OkObjectResult).Value;
+
+            List<User> actualUserList = okObjectResult.Data;
+
             //Assert
-            Assert.IsNotNull(actualData);
+            Assert.IsNotNull(actualUserList);
+            Assert.AreEqual(expectedUserList, actualUserList);
+            Assert.AreEqual(expectedUserList.FirstOrDefault(), actualUserList.FirstOrDefault());
+            Assert.AreEqual(expectedUserList.FirstOrDefault().UserName, actualUserList.FirstOrDefault().UserName);
+            Assert.AreEqual(expectedUserList.FirstOrDefault().UserAddress, actualUserList.FirstOrDefault().UserAddress);
+            Assert.AreEqual(expectedUserList.FirstOrDefault().UserContact, actualUserList.FirstOrDefault().UserContact);
+            Assert.AreEqual(expectedUserList.FirstOrDefault().UserEmail, actualUserList.FirstOrDefault().UserEmail);
+            Assert.AreEqual(expectedUserList.FirstOrDefault().UserPassword, actualUserList.FirstOrDefault().UserPassword);
+            Assert.AreEqual(expectedUserList.FirstOrDefault().UserId, actualUserList.FirstOrDefault().UserId);
         }
 
-        /// <summary>
-        /// Mock Data for User.
-        /// </summary>
-        /// <returns></returns>
-        private static Result<IEnumerable<User>> MockUserData()
+        private static User MockUserDetails()
         {
-            List<User>? users = new() {
-                new() {
-                    userName = "Mock User",
-                    userAddress = "Mock User Address",
-                    userContact = "123234123",
-                    userEmail = "mockUser@gmail.com",
-                    userPassword = "mockUserPassword",
-                    userId = 1
-                }
+            return new()
+            {
+                UserName = "Mock User",
+                UserAddress = "Mock User Address",
+                UserContact = "123234123",
+                UserEmail = "mockUser@gmail.com",
+                UserPassword = "mockUserPassword",
+                UserId = 1
             };
-
-            return GetSuccessResult(users.AsEnumerable());
         }
-
     }
 }

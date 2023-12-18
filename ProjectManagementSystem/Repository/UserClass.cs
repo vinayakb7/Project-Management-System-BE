@@ -32,9 +32,9 @@ namespace ProjectManagementSystem.Business
         public Result<int> AddUser(User user)
         {
             Asserts.IsNotNull(user, "No Data Fount to insert!.");
-            Asserts.IsNotEmpty(user.userEmail, "Email cannot be empty!");
-            Asserts.IsNotEmpty(user.userPassword, "Password cannot be empty!");
-            Asserts.IsNotEmpty(user.userRole, "Role cannot be empty!");
+            Asserts.IsNotEmpty(user.UserEmail, "Email cannot be empty!");
+            Asserts.IsNotEmpty(user.UserPassword, "Password cannot be empty!");
+            Asserts.IsNotEmpty(user.UserRole, "Role cannot be empty!");
 
             Result<int> result = new();
             try
@@ -45,14 +45,14 @@ namespace ProjectManagementSystem.Business
                 HashedPassword(user);
 
                 DynamicParameters dynamicParameters = new();
-                dynamicParameters.Add(name: "name", value: user.userName, direction: ParameterDirection.Input);
-                dynamicParameters.Add(name: "address", value: user.userAddress, direction: ParameterDirection.Input);
-                dynamicParameters.Add(name: "contact", value: user.userContact, direction: ParameterDirection.Input);
-                dynamicParameters.Add(name: "email", value: user.userEmail, direction: ParameterDirection.Input);
-                dynamicParameters.Add(name: "password", value: user.userPassword, direction: ParameterDirection.Input);
-                dynamicParameters.Add(name: "role", value: user.userRole, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "name", value: user.UserName, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "address", value: user.UserAddress, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "contact", value: user.UserContact, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "email", value: user.UserEmail, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "password", value: user.UserPassword, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "role", value: user.UserRole, direction: ParameterDirection.Input);
 
-                int userResult = (int)unitOfWork.ExecuteQuery<User>(query, dynamicParameters).FirstOrDefault().userId;
+                int userResult = (int)unitOfWork.ExecuteQuery<User>(query, dynamicParameters).FirstOrDefault().UserId;
                 unitOfWork.Commit();
                 result.Data = userResult;
                 result.IsSuccessfull = true;
@@ -79,15 +79,15 @@ namespace ProjectManagementSystem.Business
             Result<User> result = new();
             try
             {
-                var userDetails = GetUserById(user.userId);
+                var userDetails = GetUserById(user.UserId);
                 string query = IQueries.UPDATE_PASSWORD;
                 if (userDetails.Data != null)
                 {
                     HashedPassword(user);
 
                     DynamicParameters dynamicParameters = new();
-                    dynamicParameters.Add(name: "id", value: user.userId, direction: ParameterDirection.Input);
-                    dynamicParameters.Add(name: "address", value: user.userPassword, direction: ParameterDirection.Input);
+                    dynamicParameters.Add(name: "id", value: user.UserId, direction: ParameterDirection.Input);
+                    dynamicParameters.Add(name: "address", value: user.UserPassword, direction: ParameterDirection.Input);
 
                     unitOfWork.ExecuteQuery<User>(query, dynamicParameters);
                     result.IsSuccessfull = true;
@@ -96,7 +96,7 @@ namespace ProjectManagementSystem.Business
                 }
                 else
                 {
-                    SetUnprocessableEntity(result, IQueries.BAD_REQUEST, $"User with id {user.userId} Not exist to update password.");
+                    SetUnprocessableEntity(result, IQueries.BAD_REQUEST, $"User with id {user.UserId} Not exist to update password.");
                 }
             }
             catch(Exception ex)
@@ -123,9 +123,9 @@ namespace ProjectManagementSystem.Business
         public string SendNotification(User user)
         {
             string subject = IQueries.SUBJECT_FOR_NOTIFICATION;
-            string body = user.userAddress;
+            string body = user.UserAddress;
 
-            EmailTemplate(user.userEmail, subject, body);
+            EmailTemplate(user.UserEmail, subject, body);
 
             return IQueries.EMAIL_SENT;
         }
@@ -142,8 +142,8 @@ namespace ProjectManagementSystem.Business
             string query = IQueries.UPDATE_PASSWORD_BY_EMAIL;
 
             DynamicParameters dynamicParameters = new();
-            dynamicParameters.Add(name: "email", value: user.userEmail, direction: ParameterDirection.Input);
-            dynamicParameters.Add(name: "address", value: user.userPassword, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "email", value: user.UserEmail, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "address", value: user.UserPassword, direction: ParameterDirection.Input);
 
             unitOfWork.ExecuteQuery<User>(query, dynamicParameters);
 
@@ -161,7 +161,7 @@ namespace ProjectManagementSystem.Business
             string query = IQueries.GET_EMAIL;
 
             DynamicParameters dynamicParameters = new();
-            dynamicParameters.Add(name: "id", value: user.userEmail, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "id", value: user.UserEmail, direction: ParameterDirection.Input);
 
             users = unitOfWork.ExecuteQuery<User>(query, dynamicParameters);
 
@@ -270,7 +270,7 @@ namespace ProjectManagementSystem.Business
                 string query = IQueries.OTP;
 
                 DynamicParameters dynamicParameters = new();
-                dynamicParameters.Add(name: "email", value: forgot.emailId, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "email", value: forgot.EmailId, direction: ParameterDirection.Input);
                 dynamicParameters.Add(name: "otp", value: otp, direction: ParameterDirection.Input);
 
                 unitOfWork.ExecuteQuery<Forgot>(query, dynamicParameters);
@@ -278,7 +278,7 @@ namespace ProjectManagementSystem.Business
                 string subject = "OTP To Change Password";
                 string body = "Your OTP to change Password is " + otp + "<br />Thanks & Regards<br/>Admin";
 
-                EmailTemplate(forgot.emailId, subject, body);
+                EmailTemplate(forgot.EmailId, subject, body);
                 result.Data = "Email Send Successfully!";
                 result.IsSuccessfull = true;
                 result.StatusCode = (int)HttpStatusCode.OK;
@@ -299,8 +299,8 @@ namespace ProjectManagementSystem.Business
         public Result<IEnumerable<Forgot>> CheckOTP(Forgot forgot)
         {
             Asserts.IsNotNull(forgot, "Input Model null here!");
-            Asserts.IsNotNull(forgot.emailId, "Email Id cannot be empty!");
-            Asserts.IsNotNull(forgot.otp, "opt cannot be empty!");
+            Asserts.IsNotNull(forgot.EmailId, "Email Id cannot be empty!");
+            Asserts.IsNotNull(forgot.OTP, "opt cannot be empty!");
 
             Result<IEnumerable<Forgot>> result = new();
             try
@@ -308,8 +308,8 @@ namespace ProjectManagementSystem.Business
                 string query = IQueries.CHECK_OTP;
 
                 DynamicParameters dynamicParameters = new();
-                dynamicParameters.Add(name: "email", value: forgot.emailId, direction: ParameterDirection.Input);
-                dynamicParameters.Add(name: "otp", value: forgot.otp, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "email", value: forgot.EmailId, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "otp", value: forgot.OTP, direction: ParameterDirection.Input);
 
                 var data = unitOfWork.ExecuteQuery<Forgot>(query, dynamicParameters);
                 Asserts.IsNotNull(data, "Data Cannot be null here!");
@@ -350,8 +350,8 @@ namespace ProjectManagementSystem.Business
                 string query = IQueries.GET_USER_FOR_LOGIN;
 
                 DynamicParameters dynamicParameters = new();
-                dynamicParameters.Add(name: "id", value: user.userEmail, direction: ParameterDirection.Input);
-                dynamicParameters.Add(name: "nm", value: user.userPassword, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "id", value: user.UserEmail, direction: ParameterDirection.Input);
+                dynamicParameters.Add(name: "nm", value: user.UserPassword, direction: ParameterDirection.Input);
 
                 var userResult = unitOfWork.ExecuteQuery<User>(query, dynamicParameters);
                 if(userResult.Any())
@@ -383,12 +383,12 @@ namespace ProjectManagementSystem.Business
             string query = IQueries.UPDATE_USER;
 
             DynamicParameters dynamicParameters = new();
-            dynamicParameters.Add(name: "id", value: user.userEmail, direction: ParameterDirection.Input);
-            dynamicParameters.Add(name: "name", value: user.userName, direction: ParameterDirection.Input);
-            dynamicParameters.Add(name: "address", value: user.userAddress, direction: ParameterDirection.Input);
-            dynamicParameters.Add(name: "contact", value: user.userContact, direction: ParameterDirection.Input);
-            dynamicParameters.Add(name: "email", value: user.userEmail, direction: ParameterDirection.Input);
-            dynamicParameters.Add(name: "role", value: user.userRole, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "id", value: user.UserEmail, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "name", value: user.UserName, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "address", value: user.UserAddress, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "contact", value: user.UserContact, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "email", value: user.UserEmail, direction: ParameterDirection.Input);
+            dynamicParameters.Add(name: "role", value: user.UserRole, direction: ParameterDirection.Input);
 
             unitOfWork.ExecuteQuery<User>(query, dynamicParameters);
 
@@ -417,9 +417,9 @@ namespace ProjectManagementSystem.Business
         private static void HashedPassword(User user)
         {
             var sha = SHA256.Create();
-            var asByteArray = Encoding.Default.GetBytes(user.userPassword);
+            var asByteArray = Encoding.Default.GetBytes(user.UserPassword);
             var hashedPassword = sha.ComputeHash(asByteArray);
-            user.userPassword = Convert.ToBase64String(hashedPassword);
+            user.UserPassword = Convert.ToBase64String(hashedPassword);
         }
 
         /// <summary>
