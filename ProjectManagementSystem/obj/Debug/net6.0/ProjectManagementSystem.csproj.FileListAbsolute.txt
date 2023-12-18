@@ -152,3 +152,4 @@ C:\Users\vinayak.bilagi\Documents\IMP\Project-Management-System-BE\ProjectManage
 C:\Users\vinayak.bilagi\Documents\IMP\Project-Management-System-BE\ProjectManagementSystem\bin\Debug\net6.0\Swashbuckle.AspNetCore.Filters.dll
 C:\Users\vinayak.bilagi\Documents\IMP\Project-Management-System-BE\ProjectManagementSystem\bin\Debug\net6.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
 C:\Users\vinayak.bilagi\Documents\IMP\Project-Management-System-BE\ProjectManagementSystem\bin\Debug\net6.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\vinayak.bilagi\Documents\IMP\Project-Management-System-BE\ProjectManagementSystem\bin\Debug\net6.0\Newtonsoft.Json.dll
