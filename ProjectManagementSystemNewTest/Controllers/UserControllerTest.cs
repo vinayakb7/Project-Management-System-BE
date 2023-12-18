@@ -1,13 +1,4 @@
-﻿using Moq;
-using ProjectManagementSystem.Business;
-using ProjectManagementSystem.Utility;
-using ProjectManagementSystem.Models;
-using ProjectManagementSystemNewTest.TestUtility;
-using ProjectManagementSystem.Controllers;
-using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Mvc;
-
-namespace ProjectManagementSystemNewTest.Controllers
+﻿namespace ProjectManagementSystemNewTest.Controllers
 {
     /// <summary>
     /// Test class for <see cref="UserController"/>.
