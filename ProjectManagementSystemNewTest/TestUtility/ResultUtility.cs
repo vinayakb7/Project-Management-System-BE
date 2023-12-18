@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using ProjectManagementSystem.Business;
-using ProjectManagementSystem.Utility;
+﻿using ProjectManagementSystem.Utility;
 
 namespace ProjectManagementSystemNewTest.TestUtility
 {
@@ -8,9 +6,12 @@ namespace ProjectManagementSystemNewTest.TestUtility
     {
         public static Result<T> GetSuccessResult<T>(T data)
         {
-            Result<T> result = new();
-            result.IsSuccessfull = true;
-            result.Data = data;
+            Result<T> result = new()
+            {
+                IsSuccessfull = true,
+                Data = data
+            };
+
             return result;
         }
     }

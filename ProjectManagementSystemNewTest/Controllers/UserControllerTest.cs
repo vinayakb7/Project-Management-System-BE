@@ -62,7 +62,7 @@ namespace ProjectManagementSystemNewTest.Controllers
                 }
             };
 
-            return GetSuccessResult<IEnumerable<User>>(users.AsEnumerable());
+            return GetSuccessResult(users.AsEnumerable());
         }
 
     }
