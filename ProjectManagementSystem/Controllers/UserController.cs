@@ -1,37 +1,78 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Asn1.Mozilla;
 using ProjectManagementSystem.Business;
 using ProjectManagementSystem.Models;
+using ProjectManagementSystem.Utility;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace ProjectManagementSystem.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController :  BaseController
     {
         private readonly IUserClass usersClass;
-        public UserController(IUserClass userClass)
+        private readonly IConfiguration configuration;
+        public UserController(IUserClass userClass, IConfiguration configuration)
         {
-            this.usersClass = userClass;
-        }
-        [HttpPost]
-        public IActionResult GetUser(UserModel user)
-        {
-                return Ok(usersClass.GetUserForLogIn(user));
+            usersClass = userClass;
+            this.configuration = configuration;
         }
 
-        [HttpPost]
-        [Route("addUser")]
-        public IActionResult addUser(UserModel user)
+        /// <summary>
+        /// API for Log in.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        /// <exception cref="CustomException"></exception>
+        [AllowAnonymous]
+        [HttpPost("login")]
+        public IActionResult GetUser(User user)
         {
             try
             {
-                return Ok(usersClass.AddUser(user));
+                IActionResult response = Unauthorized();
+                var user_ = AuthenticateUser(user);
+                if (user_ != null)
+                {
+                    var token = GenerateToken(user_);
+                    response = Ok(new { user_ ,token = token });
+                }
+                return response;
+                //Result<IEnumerable<UserModel>> result = new();
+                //result = usersClass.GetUserForLogIn(user);
+                //return result.IsSuccessfull ? Ok(result) : Results(result);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return BadRequest(e.Message);
+                throw new CustomException(new Exception("Error occured while getting users records " + ex.Message));
+            }
+        }
+
+        /// <summary>
+        /// API to add user.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("addUser")]
+        public IActionResult AddUser(User user)
+        {
+            try
+            {
+                Result<int> result = new();
+                result = usersClass.AddUser(user);
+                return result.IsSuccessfull ? Ok(result) : Results(result);
+            }
+            catch (Exception ex)
+            {
+                throw new CustomException(new Exception("Error occured while getting users records " + ex.Message));
             }
         }
         [HttpPost]
@@ -40,11 +81,13 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(usersClass.SendOTP(forgot));
+                Result<string> result = new();
+                result = usersClass.SendOTP(forgot);
+                return result.IsSuccessfull ? Ok(result) : Results(result);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return BadRequest(e.Message);
+                throw new CustomException(new Exception("Error occured while sending OTP " + ex.Message));
             }
         }
         [HttpPost]
@@ -53,16 +96,18 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(usersClass.CheckOTP(forgot));
+                Result<IEnumerable<Forgot>> result = new();
+                result = usersClass.CheckOTP(forgot);
+                return result.IsSuccessfull ? Ok(result) : Results(result);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return BadRequest(e.Message);
+                throw new CustomException(new Exception("Error occured while sending OTP " + ex.Message));
             }
         }
         [HttpPost]
         [Route("getEmail")]
-        public IActionResult getEmail(UserModel user)
+        public IActionResult getEmail(User user)
         {
             try
             {
@@ -80,37 +125,57 @@ namespace ProjectManagementSystem.Controllers
         {
             try
             {
-                return Ok(usersClass.GetAll());
+                Result<IEnumerable<User>> result = new();
+                result = usersClass.GetAll();
+                return result.IsSuccessfull ? Ok(result) : Results(result);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return BadRequest(e.Message);
+                throw new CustomException(new Exception("Error occured while getting users records " + ex.Message));
             }
         }
 
+        /// <summary>
+        /// API to update user password.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         [HttpPut]
         [Route("updatePassword")]
-        public IActionResult updatePassword(UserModel user)
-        {
-            return Ok(usersClass.UpdatePassword(user));
-        }
-        [HttpPost]
-        [Route("getUserById")]
-        public IActionResult getUserById(UserModel user)
+        public IActionResult updatePassword(User user)
         {
             try
             {
-                return Ok(usersClass.GetUserById(user));
+                Result<User> result = new();
+                result = usersClass.UpdatePassword(user);
+                return result.IsSuccessfull ? Ok(result) : Results(result);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return BadRequest(e.Message);
+                throw new CustomException(new Exception("Error occured while updating user password " + ex.Message));
+            }
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("getUserById/{userId}")]
+        public IActionResult getUserById(int userId)
+        {
+            try
+            {
+                Result<IEnumerable<User>> result = new();
+                result = usersClass.GetUserById(userId);
+                return result.IsSuccessfull ? Ok(result) : Results(result);
+            }
+            catch (Exception ex)
+            {
+                throw new CustomException(new Exception("Error occured while getting users records " + ex.Message));
             }
         }
 
         [HttpPost]
         [Route("updateUser")]
-        public IActionResult updateUser(UserModel user)
+        public IActionResult updateUser(User user)
         {
             try
             {
@@ -137,14 +202,14 @@ namespace ProjectManagementSystem.Controllers
 
         [HttpPut]
         [Route("updatePasswordByEmail")]
-        public IActionResult updatePasswordByEmail(UserModel user)
+        public IActionResult updatePasswordByEmail(User user)
         {
             return Ok(usersClass.UpdatePasswordByEmail(user));
         }
 
         [HttpPost]
         [Route("sendNotification")]
-        public IActionResult notification(UserModel user)
+        public IActionResult notification(User user)
         {
             try
             {
@@ -161,6 +226,34 @@ namespace ProjectManagementSystem.Controllers
         public IActionResult deleteUser(int id)
         {
             return Ok(usersClass.DeleteUser(id));
+        }
+
+        private User AuthenticateUser(User user)
+        {
+            User _user = usersClass.GetUserForLogIn(user).Data.FirstOrDefault();
+            if (_user != null)
+            {
+                return _user;
+            }
+            return _user;
+        }
+
+        private string GenerateToken(User user)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, user.UserEmail),
+                new Claim(ClaimTypes.Role,user.UserRole)
+            };
+            var token = new JwtSecurityToken(configuration["Jwt:Issuer"],
+                configuration["Jwt:Audience"],
+                claims,
+                expires: DateTime.Now.AddMinutes(15),
+                signingCredentials: credentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
     }

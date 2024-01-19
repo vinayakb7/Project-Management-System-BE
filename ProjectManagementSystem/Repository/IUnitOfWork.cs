@@ -8,6 +8,12 @@ namespace ProjectManagementSystem.Business
     {
         MySqlConnection GetConnection();
 
+        void Begin();
+
+        void Commit();
+
+        void RollBack();
+
         public IEnumerable<T> ExecuteQuery<T>(string query);
 
         public IEnumerable<T> ExecuteQuery<T>(string query, DynamicParameters dynamicParameters);

@@ -7,8 +7,10 @@ namespace ProjectManagementSystem.Business
 {
     public class UnitOfWork : IUnitOfWork
     {
+        public IDbTransaction transaction;
 
         private MySqlConnection connection;
+
         private readonly IConfiguration _configuration;
         public UnitOfWork(IConfiguration configuration)
         {
@@ -76,6 +78,55 @@ namespace ProjectManagementSystem.Business
             connection = new MySqlConnection(_configuration.GetConnectionString("dbConnection"));
             connection.Open();
             return connection;
+        }
+
+        /// <summary>
+        /// Method to commit the transaction.
+        /// </summary>
+        public void Commit()
+        {
+            if(transaction is not null)
+            {
+                try
+                {
+                    if (transaction.Connection is not null && transaction.Connection.State.Equals(ConnectionState.Open))
+                    {
+                        transaction.Commit();
+                    }
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+                finally
+                {
+                    transaction = null;
+                    connection.Close();
+                }
+            }
+            else
+            {
+                transaction = null;
+                connection.Close();
+            }
+        }
+
+        /// <summary>
+        /// Method to roll back the transaction on exception.
+        /// </summary>
+        public void RollBack()
+        {
+            transaction.Rollback();
+        }
+
+        /// <summary>
+        /// Method to begin the transaction.
+        /// </summary>
+        /// <param name="isolationLevel"></param>
+        public void Begin()
+        {
+            transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
         }
     }
 }
