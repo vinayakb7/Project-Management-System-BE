@@ -11,9 +11,9 @@
         /// Method to get <see cref="IUnitOfWork"/> for repository test cases.
         /// </summary>
         /// <returns></returns>
-        public static UnitOfWork GetUnitOfWork()
+        public static TestUnitOfWork GetUnitOfWork()
         {
-            return new UnitOfWork(GetConfiguration());
+            return new TestUnitOfWork(GetConfiguration());
         }
 
         /// <summary>

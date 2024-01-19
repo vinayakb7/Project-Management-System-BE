@@ -1,5 +1,4 @@
 ﻿using ProjectManagementSystem.Models;
-using MySql.Data.MySqlClient;
 using MimeKit;
 using MailKit.Net.Smtp;
 using System.Security.Cryptography;
@@ -8,20 +7,16 @@ using Dapper;
 using System.Data;
 using ProjectManagementSystem.Constants;
 using System.Net;
-using MySqlX.XDevAPI.Common;
-using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using ProjectManagementSystem.Utility;
+using ProjectManagementSystem.Repository;
 
 namespace ProjectManagementSystem.Business
 {
-    public class UserClass : IUserClass
+    public class UserClass : BaseRepository, IUserClass
     {
-        public IDbTransaction transaction;
-
-        private readonly IUnitOfWork unitOfWork;
-        public UserClass(IUnitOfWork unitOfWork)
+        public UserClass(IConfiguration configuration) : base(configuration)
         {
-            this.unitOfWork = unitOfWork;
+
         }
 
         /// <summary>

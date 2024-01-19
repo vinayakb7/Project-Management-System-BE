@@ -21,7 +21,7 @@ namespace ProjectManagementSystem.Controllers
         private readonly IConfiguration configuration;
         public UserController(IUserClass userClass, IConfiguration configuration)
         {
-            this.usersClass = userClass;
+            usersClass = userClass;
             this.configuration = configuration;
         }
 

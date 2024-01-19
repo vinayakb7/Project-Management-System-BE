@@ -4,11 +4,13 @@
     public class UserClassTest : RepositoryTestHelper
     {
         private UserClass userClass;
+        private TestUnitOfWork testUnitOfWork;
 
         [TestInitialize]
         public void SetUp()
         {
-            userClass = new(GetUnitOfWork());
+            testUnitOfWork = GetUnitOfWork();
+            userClass = new(testUnitOfWork);
         }
 
         [TestMethod]
@@ -49,13 +51,11 @@
         [TestCleanup]
         public void CleanUp()
         {
-            UnitOfWork unitOfWork = GetUnitOfWork();
-            string setSafeExecution = "SET SQL_SAFE_UPDATES = 0;";
             string deleteUser = "DELETE FROM PROJECTMANAGEMENTSYSTEM.USERTABLE WHERE USERNAME='Mock User';";
-            using (var connection = unitOfWork.GetConnection())
+            using (var connection = testUnitOfWork.GetConnection())
             {
                 //unitOfWork.ExecuteQuery<string>(setSafeExecution);
-                unitOfWork.ExecuteQuery<User>(deleteUser);
+                testUnitOfWork.ExecuteQuery<User>(deleteUser);
             }
         }
     }
